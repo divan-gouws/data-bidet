@@ -1,0 +1,301 @@
+/* App.css */
+
+/* Default (light mode) */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #1a1a1a;
+  --table-bg: #f7f7f7;
+  --cell-border: #ccc;
+  --header-bg: #eaeaea;
+  --input-bg: #ffffff;
+  --input-border: #bbb;
+  --focus-border: #666;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --cell-hover-bg: #f0f0f0;
+  --cell-selected-bg: #e3f2fd;
+  --cell-selected-border: #2196f3;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #1e1e1e;
+    --text-color: #f5f5f5;
+    --table-bg: #2a2a2a;
+    --cell-border: #444;
+    --header-bg: #333;
+    --input-bg: #2e2e2e;
+    --input-border: #555;
+    --focus-border: #888;
+    --shadow-color: rgba(0, 0, 0, 0.6);
+    --cell-hover-bg: #3a3a3a;
+    --cell-selected-bg: #1e3a5f;
+    --cell-selected-border: #64b5f6;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+h1 {
+  margin-bottom: 1rem;
+}
+
+.table-wrapper {
+  border-collapse: collapse;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px var(--shadow-color);
+  background-color: var(--table-bg);
+  min-width: 600px;
+  color: var(--text-color);
+  font-size: 14px;
+  border: 2px solid var(--cell-border);
+}
+
+.table-wrapper thead {
+  background-color: var(--header-bg);
+  border-bottom: 2px solid var(--cell-border);
+}
+
+.table-wrapper th,
+.table-wrapper td {
+  padding: 0;
+  text-align: left;
+  border: 1px solid var(--cell-border);
+  position: relative;
+  background-color: var(--bg-color);
+  min-width: 80px;
+  max-width: 300px;
+}
+
+.table-wrapper td {
+  height: 32px;
+  vertical-align: middle;
+  transition: background-color 0.1s ease;
+  overflow: hidden;
+}
+
+.table-wrapper tr:hover td {
+  background-color: var(--cell-hover-bg);
+}
+
+.table-wrapper tr:hover td.cell-selected {
+  background-color: var(--cell-selected-bg) !important;
+}
+
+/* Cell container styling */
+.cell-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  cursor: text;
+  position: relative;
+  min-height: 32px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.cell-container:hover {
+  background-color: var(--cell-hover-bg);
+}
+
+/* Cell display mode */
+.cell-display {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-color);
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+/* Cell input mode */
+.cell-input {
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-color);
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  min-height: 32px;
+  overflow: hidden;
+}
+
+.cell-input:focus {
+  background-color: var(--cell-selected-bg);
+  box-shadow: inset 0 0 0 2px var(--cell-selected-border);
+}
+
+/* Selected cell styling */
+.cell-selected {
+  background-color: var(--cell-selected-bg) !important;
+  box-shadow: inset 0 0 0 2px var(--cell-selected-border);
+}
+
+.cell-selected .cell-container {
+  background-color: var(--cell-selected-bg);
+}
+
+.col-header {
+  text-align: left;
+  padding: 0.5rem 1rem 0.3rem 1rem; /* less bottom padding */
+  line-height: 1.1;
+  border-bottom: none; /* just in case */
+  vertical-align: bottom;
+  border-bottom: none !important;
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--header-bg);
+  border-right: 1px solid var(--cell-border);
+  border-bottom: 2px solid var(--cell-border);
+}
+
+.header-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-color);
+}
+
+.col-type {
+  font-style: italic;
+  font-size: 0.75em;
+  color: #999999;
+  margin-top: 0;   /* remove top margin */
+  padding-top: 0;  /* remove top padding */
+  user-select: none;
+  line-height: 1;
+}
+
+.col-type-select {
+  margin-top: 2px;
+  font-size: 0.85em;
+  font-style: normal;
+  color: #555;
+  width: 100%;
+  max-width: 120px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #aaa;
+  background-color: white;
+  cursor: pointer;
+}
+
+.col-type-select:hover {
+  border-color: var(--focus-border);
+}
+
+.col-type-select:focus {
+  outline: none;
+  border-color: var(--cell-selected-border);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+}
+
+/* Column resizer */
+.column-resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.1s ease;
+}
+
+.column-resizer:hover {
+  background-color: var(--cell-selected-border);
+}
+
+.column-resizer:active {
+  background-color: var(--cell-selected-border);
+}
+
+/* Ensure headers have relative positioning for resizer */
+.col-header {
+  position: relative;
+  text-align: left;
+  padding: 0.5rem 1rem 0.3rem 1rem; /* less bottom padding */
+  line-height: 1.1;
+  border-bottom: none; /* just in case */
+  vertical-align: bottom;
+  border-bottom: none !important;
+  font-weight: 600;
+  color: var(--text-color);
+  background-color: var(--header-bg);
+  border-right: 1px solid var(--cell-border);
+  border-bottom: 2px solid var(--cell-border);
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: text;
+}
+
+.header-label-container {
+  min-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.header-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-color);
+  cursor: text;
+}
+
+.header-input {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color);
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+}
+
+.header-input:focus {
+  background-color: var(--cell-selected-bg);
+  box-shadow: inset 0 0 0 2px var(--cell-selected-border);
+}
+
+/* Header selection state */
+.header-selected {
+  background-color: var(--cell-selected-bg);
+  box-shadow: inset 0 0 0 2px var(--cell-selected-border);
+}
+
+.header-selected .header-input {
+  background-color: var(--cell-selected-bg);
+}
