@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { validateCellValue, formatCellValue } from "./utils/spreadsheetUtils";
 
 interface EditableCellProps {
   value: string;
@@ -33,6 +34,24 @@ const EditableCell: React.FC<EditableCellProps> = ({
     onChange(val);
   };
 
+  const handleBlur = () => {
+    // Validate and format the value when leaving the cell
+    if (inputValue && !validateCellValue(inputValue, columnType)) {
+      // If invalid, reset to original value
+      setInputValue(value);
+      onChange(value);
+    } else if (inputValue) {
+      // Format the value for display
+      const formattedValue = formatCellValue(inputValue, columnType);
+      setInputValue(formattedValue);
+      onChange(formattedValue);
+    }
+    
+    if (onEditEnd) {
+      onEditEnd();
+    }
+  };
+
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
 
@@ -56,11 +75,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
     }
   };
 
-  const handleBlur = () => {
-    if (onEditEnd) {
-      onEditEnd();
-    }
-  };
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
