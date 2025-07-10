@@ -191,6 +191,58 @@ export const useSpreadsheet = () => {
     setIsEditing(false);
   }, []);
 
+  const handleColumnReorder = useCallback((fromIndex: number, toIndex: number): void => {
+    setColumnSchema((prevSchema) => {
+      const newSchema = [...prevSchema];
+      const [movedColumn] = newSchema.splice(fromIndex, 1);
+      newSchema.splice(toIndex, 0, movedColumn);
+      return newSchema;
+    });
+
+    // Update all rows to maintain column order
+    setRows((prevRows) => {
+      return prevRows.map(row => {
+        const newRow = { ...row };
+        const orderedData: { [key: string]: string } = {};
+        columnSchema.forEach(col => {
+          orderedData[col.key] = newRow[col.key];
+        });
+        return orderedData;
+      });
+    });
+  }, [columnSchema]);
+
+  const handleAddColumn = useCallback((): void => {
+    setColumnSchema((prevSchema) => {
+      const newColumnKey = `col${prevSchema.length + 1}`;
+      const newColumn: ColumnDefinition = {
+        key: newColumnKey,
+        label: `Column ${prevSchema.length + 1}`,
+        type: 'string'
+      };
+      return [...prevSchema, newColumn];
+    });
+
+    // Add the new column to all existing rows with empty values
+    setRows((prevRows) => {
+      return prevRows.map(row => ({
+        ...row,
+        [`col${columnSchema.length + 1}`]: ''
+      }));
+    });
+  }, [columnSchema.length]);
+
+  const handleAddRow = useCallback((): void => {
+    setRows((prevRows) => {
+      const newRow: RowData = {};
+      // Initialize the new row with empty values for all columns
+      columnSchema.forEach(col => {
+        newRow[col.key] = '';
+      });
+      return [...prevRows, newRow];
+    });
+  }, [columnSchema]);
+
   return {
     // State
     rows,
@@ -220,5 +272,8 @@ export const useSpreadsheet = () => {
     handleHeaderClick,
     handleEditStart,
     handleEditEnd,
+    handleColumnReorder,
+    handleAddColumn,
+    handleAddRow,
   };
 }; 

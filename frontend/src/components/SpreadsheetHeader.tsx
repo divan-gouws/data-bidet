@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { ColumnDefinition } from '../types';
 import { COLUMN_TYPES } from '../constants';
 import { useColumnResize } from '../hooks/useColumnResize';
@@ -14,6 +14,7 @@ interface SpreadsheetHeaderProps {
   handleColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date') => void;
   handleHeaderClick: (colIndex: number, event: React.MouseEvent) => void;
   handleHeaderPaste: (startCol: number, cells: string[][]) => void;
+  handleColumnReorder: (fromIndex: number, toIndex: number) => void;
 }
 
 export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
@@ -25,11 +26,55 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
   handleColumnTypeChange,
   handleHeaderClick,
   handleHeaderPaste,
+  handleColumnReorder,
 }) => {
   const { resizingColumn, handleResizeStart } = useColumnResize({
     handleColumnResize,
     getColumnWidth,
   });
+
+  const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, colIndex: number) => {
+    setDraggedColumn(colIndex);
+    e.dataTransfer.effectAllowed = 'move';
+    e.currentTarget.classList.add('dragging');
+  };
+
+  const handleDragEnter = (e: React.DragEvent, colIndex: number) => {
+    e.preventDefault();
+    if (colIndex !== draggedColumn) {
+      setDragOverColumn(colIndex);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    const relatedTarget = e.relatedTarget as HTMLElement;
+    if (!relatedTarget?.closest('th')) {
+      setDragOverColumn(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, colIndex: number) => {
+    e.preventDefault();
+    if (draggedColumn !== null && draggedColumn !== colIndex) {
+      handleColumnReorder(draggedColumn, colIndex);
+    }
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+    document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+  };
 
   return (
     <thead>
@@ -37,10 +82,20 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
         {columnSchema.map((col, colIndex) => (
           <th 
             key={col.key} 
-            className="col-header"
+            className={`col-header ${dragOverColumn === colIndex ? 'drag-over' : ''} ${draggedColumn === colIndex ? 'dragging' : ''}`}
             style={{ width: getColumnWidth(col.key) }}
             data-column={col.key}
+            onDragEnter={(e) => handleDragEnter(e, colIndex)}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, colIndex)}
           >
+            <div 
+              className="col-drag-handle"
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, colIndex)}
+              onDragEnd={handleDragEnd}
+            />
             <div 
               className="cell-container"
               onClick={(e) => handleHeaderClick(colIndex, e)}

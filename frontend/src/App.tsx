@@ -29,6 +29,9 @@ function App() {
     handleHeaderClick,
     handleEditStart,
     handleEditEnd,
+    handleColumnReorder,
+    handleAddColumn,
+    handleAddRow,
     setSelectedCell,
     setSelectedHeader,
     setIsEditing,
@@ -86,6 +89,9 @@ function App() {
         handleMultiPaste={handleMultiPaste}
         handleEditStart={handleEditStart}
         handleEditEnd={handleEditEnd}
+        handleColumnReorder={handleColumnReorder}
+        handleAddColumn={handleAddColumn}
+        handleAddRow={handleAddRow}
         cellRefs={cellRefs}
       />
     </div>

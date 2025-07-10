@@ -375,3 +375,102 @@ body {
   padding: 2px 4px;
   margin: -2px -4px;
 }
+
+.col-drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: grab;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+  z-index: 1;
+}
+
+.col-drag-handle:hover {
+  background-color: var(--cell-selected-border);
+}
+
+.col-drag-handle:active {
+  cursor: grabbing;
+}
+
+.col-header.dragging {
+  opacity: 0.6;
+  background-color: var(--cell-selected-bg);
+}
+
+.col-header.drag-over {
+  position: relative;
+}
+
+.col-header.drag-over::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -2px;
+  width: 4px;
+  height: 100%;
+  background-color: var(--cell-selected-border);
+  z-index: 2;
+}
+
+.add-column-header {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+  vertical-align: middle;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.spreadsheet-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.spreadsheet-main {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.table-actions-right {
+  padding-top: 8px;
+}
+
+.table-actions-bottom {
+  align-self: flex-start;
+  padding-left: 8px;
+}
+
+.add-column-button,
+.add-row-button {
+  padding: 8px 16px;
+  background-color: var(--header-bg);
+  border: 1px solid var(--cell-border);
+  border-radius: 6px;
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease-in-out;
+  min-width: 100px;
+  text-align: center;
+}
+
+.add-column-button:hover,
+.add-row-button:hover {
+  background-color: var(--cell-hover-bg);
+  border-color: var(--cell-selected-border);
+}
+
+.add-column-button:active,
+.add-row-button:active {
+  transform: translateY(1px);
+  background-color: var(--cell-selected-bg);
+}
