@@ -6,7 +6,7 @@ import type {
   ColumnWidths 
 } from '../types';
 import { SPREADSHEET_CONSTANTS } from '../constants';
-import { initialColumnSchema, createInitialRows } from '../data/initialData';
+import { initialColumnSchema, createInitialRows, getDefaultTitle } from '../data/initialData';
 
 export const useSpreadsheet = () => {
   const [rows, setRows] = useState<RowData[]>(() => 
@@ -17,11 +17,18 @@ export const useSpreadsheet = () => {
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>({});
   const [isEditing, setIsEditing] = useState(false);
   const [selectedHeader, setSelectedHeader] = useState<number | null>(null);
+  const [title, setTitle] = useState<string>(getDefaultTitle());
   const cellRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const getColumnWidth = useCallback((columnKey: string): number => {
     return columnWidths[columnKey] || SPREADSHEET_CONSTANTS.DEFAULT_COLUMN_WIDTH;
   }, [columnWidths]);
+
+  const getTotalTableWidth = useCallback((): number => {
+    return columnSchema.reduce((total, col) => {
+      return total + getColumnWidth(col.key);
+    }, 0);
+  }, [columnSchema, getColumnWidth]);
 
   const handleColumnResize = useCallback((columnKey: string, newWidth: number): void => {
     setColumnWidths(prev => ({
@@ -31,6 +38,10 @@ export const useSpreadsheet = () => {
         Math.min(SPREADSHEET_CONSTANTS.MAX_COLUMN_WIDTH, newWidth)
       )
     }));
+  }, []);
+
+  const handleTitleChange = useCallback((newTitle: string): void => {
+    setTitle(newTitle);
   }, []);
 
   const handleColumnNameChange = useCallback((colIndex: number, newName: string): void => {
@@ -67,6 +78,42 @@ export const useSpreadsheet = () => {
 
     setRows(updatedRows);
   }, [rows, columnSchema]);
+
+  const handleHeaderPaste = useCallback((startCol: number, cells: string[][]): void => {
+    const updatedColumnSchema = [...columnSchema];
+    const updatedRows = [...rows];
+
+    // Handle header paste - use the first row for headers
+    const headerRow = cells[0] || [];
+    
+    for (let c = 0; c < headerRow.length; c++) {
+      const colIdx = startCol + c;
+      if (colIdx >= updatedColumnSchema.length) break;
+
+      // Update only the label, preserve the type and key
+      updatedColumnSchema[colIdx] = {
+        ...updatedColumnSchema[colIdx],
+        label: headerRow[c]
+      };
+    }
+
+    // Handle data paste - use remaining rows for data
+    for (let r = 1; r < cells.length; r++) {
+      const rowIdx = r - 1; // Start from first data row (index 0)
+      if (rowIdx >= updatedRows.length) break;
+
+      for (let c = 0; c < cells[r].length; c++) {
+        const colIdx = startCol + c;
+        if (colIdx >= updatedColumnSchema.length) break;
+
+        const colKey = updatedColumnSchema[colIdx].key;
+        updatedRows[rowIdx][colKey] = cells[r][c];
+      }
+    }
+
+    setColumnSchema(updatedColumnSchema);
+    setRows(updatedRows);
+  }, [columnSchema, rows]);
 
   const onCellChange = useCallback((rowIndex: number, columnKey: string, newValue: string): void => {
     const updatedRows = [...rows];
@@ -116,8 +163,9 @@ export const useSpreadsheet = () => {
   }, []);
 
   const handleHeaderClick = useCallback((colIndex: number, event: React.MouseEvent): void => {
-    // Don't handle clicks on the dropdown
-    if ((event.target as HTMLElement).closest('.col-type-select')) {
+    // Don't handle clicks on the dropdown or resizer
+    if ((event.target as HTMLElement).closest('.col-type-select') || 
+        (event.target as HTMLElement).closest('.column-resizer')) {
       return;
     }
     
@@ -151,14 +199,20 @@ export const useSpreadsheet = () => {
     selectedHeader,
     columnWidths,
     isEditing,
+    title,
     cellRefs,
-    
+    setSelectedCell,
+    setSelectedHeader,
+    setIsEditing,
     // Actions
     getColumnWidth,
+    getTotalTableWidth,
     handleColumnResize,
+    handleTitleChange,
     handleColumnNameChange,
     handleColumnTypeChange,
     handleMultiPaste,
+    handleHeaderPaste,
     onCellChange,
     navigateToCell,
     navigateToHeader,

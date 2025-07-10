@@ -1,8 +1,9 @@
 export const SPREADSHEET_CONSTANTS = {
   DEFAULT_COLUMN_WIDTH: 150,
   MIN_COLUMN_WIDTH: 80,
-  MAX_COLUMN_WIDTH: 300,
+  MAX_COLUMN_WIDTH: 450, // 3x the default width
   DEFAULT_ROW_COUNT: 5,
+  DEFAULT_TITLE: "Untitled Spreadsheet",
 } as const;
 
 export const KEYBOARD_KEYS = {

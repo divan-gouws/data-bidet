@@ -10,16 +10,17 @@ interface SpreadsheetTableProps {
   selectedHeader: number | null;
   isEditing: boolean;
   getColumnWidth: (columnKey: string) => number;
+  getTotalTableWidth: () => number;
   handleColumnResize: (columnKey: string, newWidth: number) => void;
   handleColumnNameChange: (colIndex: number, newName: string) => void;
   handleColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date') => void;
   handleHeaderClick: (colIndex: number, event: React.MouseEvent) => void;
+  handleHeaderPaste: (startCol: number, cells: string[][]) => void;
   handleCellClick: (rowIndex: number, colIndex: number) => void;
   onCellChange: (rowIndex: number, columnKey: string, newValue: string) => void;
   handleMultiPaste: (startRow: number, startCol: number, cells: string[][]) => void;
   handleEditStart: () => void;
   handleEditEnd: () => void;
-  navigateToCell: (row: number, col: number, shouldEdit: boolean) => void;
   cellRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
 }
 
@@ -30,43 +31,49 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
   selectedHeader,
   isEditing,
   getColumnWidth,
+  getTotalTableWidth,
   handleColumnResize,
   handleColumnNameChange,
   handleColumnTypeChange,
   handleHeaderClick,
+  handleHeaderPaste,
   handleCellClick,
   onCellChange,
   handleMultiPaste,
   handleEditStart,
   handleEditEnd,
-  navigateToCell,
   cellRefs,
 }) => {
+  const totalWidth = getTotalTableWidth();
+
   return (
-    <table className="table-wrapper" border={1} cellPadding={8} cellSpacing={0}>
-      <SpreadsheetHeader
-        columnSchema={columnSchema}
-        selectedHeader={selectedHeader}
-        getColumnWidth={getColumnWidth}
-        handleColumnResize={handleColumnResize}
-        handleColumnNameChange={handleColumnNameChange}
-        handleColumnTypeChange={handleColumnTypeChange}
-        handleHeaderClick={handleHeaderClick}
-        navigateToCell={navigateToCell}
-      />
-      <SpreadsheetBody
-        rows={rows}
-        columnSchema={columnSchema}
-        selectedCell={selectedCell}
-        isEditing={isEditing}
-        getColumnWidth={getColumnWidth}
-        handleCellClick={handleCellClick}
-        onCellChange={onCellChange}
-        handleMultiPaste={handleMultiPaste}
-        handleEditStart={handleEditStart}
-        handleEditEnd={handleEditEnd}
-        cellRefs={cellRefs}
-      />
-    </table>
+    <div className="table-container" style={{ width: `${totalWidth}px` }}>
+      <table className="table-wrapper" border={1} cellPadding={8} cellSpacing={0}>
+        <SpreadsheetHeader
+          columnSchema={columnSchema}
+          selectedHeader={selectedHeader}
+          getColumnWidth={getColumnWidth}
+          handleColumnResize={handleColumnResize}
+          handleColumnNameChange={handleColumnNameChange}
+          handleColumnTypeChange={handleColumnTypeChange}
+          handleHeaderClick={handleHeaderClick}
+          handleHeaderPaste={handleHeaderPaste}
+        />
+        <SpreadsheetBody
+          rows={rows}
+          columnSchema={columnSchema}
+          selectedCell={selectedCell}
+          isEditing={isEditing}
+          getColumnWidth={getColumnWidth}
+          handleCellClick={handleCellClick}
+          onCellChange={onCellChange}
+          handleMultiPaste={handleMultiPaste}
+          handleEditStart={handleEditStart}
+          handleEditEnd={handleEditEnd}
+          cellRefs={cellRefs}
+          handleColumnResize={handleColumnResize}
+        />
+      </table>
+    </div>
   );
 }; 

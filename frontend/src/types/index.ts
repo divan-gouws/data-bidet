@@ -24,4 +24,5 @@ export interface SpreadsheetState {
   selectedHeader: number | null;
   columnWidths: ColumnWidths;
   isEditing: boolean;
+  title: string;
 } 

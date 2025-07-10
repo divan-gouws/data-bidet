@@ -1,6 +1,8 @@
 import React from 'react';
 import type { RowData, ColumnDefinition, CellPosition } from '../types';
 import EditableCell from '../EditableCell';
+import { useColumnResize } from '../hooks/useColumnResize';
+import { ColumnResizer } from './ColumnResizer';
 
 interface SpreadsheetBodyProps {
   rows: RowData[];
@@ -14,6 +16,7 @@ interface SpreadsheetBodyProps {
   handleEditStart: () => void;
   handleEditEnd: () => void;
   cellRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
+  handleColumnResize: (columnKey: string, newWidth: number) => void;
 }
 
 export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
@@ -28,7 +31,13 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
   handleEditStart,
   handleEditEnd,
   cellRefs,
+  handleColumnResize,
 }) => {
+  const { resizingColumn, handleResizeStart } = useColumnResize({
+    handleColumnResize,
+    getColumnWidth,
+  });
+
   return (
     <tbody>
       {rows.map((row, rowIndex) => (
@@ -36,13 +45,13 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
           {columnSchema.map((col, colIndex) => {
             const cellKey = `${rowIndex}-${colIndex}`;
             const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
-            
             return (
               <td 
                 key={col.key} 
                 className={isSelected ? "cell-selected" : ""}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
-                style={{ width: getColumnWidth(col.key) }}
+                style={{ width: getColumnWidth(col.key), position: 'relative' }}
+                data-column={col.key}
               >
                 <div
                   ref={(el) => {
@@ -58,6 +67,12 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
                     isEditing={isEditing && selectedCell?.row === rowIndex && selectedCell?.col === colIndex}
                     onEditStart={handleEditStart}
                     onEditEnd={handleEditEnd}
+                  />
+                  {/* Resizer handle for every cell */}
+                  <ColumnResizer
+                    columnKey={col.key}
+                    resizingColumn={resizingColumn}
+                    onResizeStart={handleResizeStart}
                   />
                 </div>
               </td>

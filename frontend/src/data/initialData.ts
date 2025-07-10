@@ -1,4 +1,5 @@
 import type { ColumnDefinition, RowData } from '../types';
+import { SPREADSHEET_CONSTANTS } from '../constants';
 
 export const initialColumnSchema: ColumnDefinition[] = [
   { key: "name", label: "Name", type: "string" },
@@ -12,4 +13,8 @@ export const createInitialRows = (count: number): RowData[] => {
     age: '',
     birthdate: '',
   }));
+};
+
+export const getDefaultTitle = (): string => {
+  return SPREADSHEET_CONSTANTS.DEFAULT_TITLE;
 }; 

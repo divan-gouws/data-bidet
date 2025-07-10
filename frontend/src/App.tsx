@@ -1,6 +1,7 @@
-import React from "react";
+
 import "./App.css";
 import { SpreadsheetTable } from "./components/SpreadsheetTable";
+import { SpreadsheetTitle } from "./components/SpreadsheetTitle";
 import { useSpreadsheet } from "./hooks/useSpreadsheet";
 import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
 
@@ -11,12 +12,16 @@ function App() {
     selectedCell,
     selectedHeader,
     isEditing,
+    title,
     cellRefs,
     getColumnWidth,
+    getTotalTableWidth,
     handleColumnResize,
+    handleTitleChange,
     handleColumnNameChange,
     handleColumnTypeChange,
     handleMultiPaste,
+    handleHeaderPaste,
     onCellChange,
     navigateToCell,
     navigateToHeader,
@@ -24,6 +29,9 @@ function App() {
     handleHeaderClick,
     handleEditStart,
     handleEditEnd,
+    setSelectedCell,
+    setSelectedHeader,
+    setIsEditing,
   } = useSpreadsheet();
 
   const { handleKeyDown } = useKeyboardNavigation({
@@ -45,9 +53,20 @@ function App() {
     cellRefs,
   });
 
+  // Handler to clear cell selection/editing when focusing the title
+  const handleFocusTitle = () => {
+    setSelectedCell(null);
+    setSelectedHeader(null);
+    setIsEditing(false);
+  };
+
   return (
     <div className="app-container" onKeyDown={handleKeyDown} tabIndex={0}>
-      <h1>Spreadsheet App</h1>
+      <SpreadsheetTitle 
+        title={title}
+        onTitleChange={handleTitleChange}
+        onFocusTitle={handleFocusTitle}
+      />
       
       <SpreadsheetTable
         rows={rows}
@@ -56,16 +75,17 @@ function App() {
         selectedHeader={selectedHeader}
         isEditing={isEditing}
         getColumnWidth={getColumnWidth}
+        getTotalTableWidth={getTotalTableWidth}
         handleColumnResize={handleColumnResize}
         handleColumnNameChange={handleColumnNameChange}
         handleColumnTypeChange={handleColumnTypeChange}
         handleHeaderClick={handleHeaderClick}
+        handleHeaderPaste={handleHeaderPaste}
         handleCellClick={handleCellClick}
         onCellChange={onCellChange}
         handleMultiPaste={handleMultiPaste}
         handleEditStart={handleEditStart}
         handleEditEnd={handleEditEnd}
-        navigateToCell={navigateToCell}
         cellRefs={cellRefs}
       />
     </div>

@@ -1,6 +1,9 @@
 import React from 'react';
 import type { ColumnDefinition } from '../types';
 import { COLUMN_TYPES } from '../constants';
+import { useColumnResize } from '../hooks/useColumnResize';
+import { ColumnResizer } from './ColumnResizer';
+import EditableHeader from './EditableHeader';
 
 interface SpreadsheetHeaderProps {
   columnSchema: ColumnDefinition[];
@@ -10,7 +13,7 @@ interface SpreadsheetHeaderProps {
   handleColumnNameChange: (colIndex: number, newName: string) => void;
   handleColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date') => void;
   handleHeaderClick: (colIndex: number, event: React.MouseEvent) => void;
-  navigateToCell: (row: number, col: number, shouldEdit: boolean) => void;
+  handleHeaderPaste: (startCol: number, cells: string[][]) => void;
 }
 
 export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
@@ -21,8 +24,13 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
   handleColumnNameChange,
   handleColumnTypeChange,
   handleHeaderClick,
-  navigateToCell,
+  handleHeaderPaste,
 }) => {
+  const { resizingColumn, handleResizeStart } = useColumnResize({
+    handleColumnResize,
+    getColumnWidth,
+  });
+
   return (
     <thead>
       <tr>
@@ -31,64 +39,42 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
             key={col.key} 
             className="col-header"
             style={{ width: getColumnWidth(col.key) }}
+            data-column={col.key}
           >
             <div 
-              className={`header-content ${selectedHeader === colIndex ? 'header-selected' : ''}`}
-              onClick={(event) => handleHeaderClick(colIndex, event)}
+              className="cell-container"
+              onClick={(e) => handleHeaderClick(colIndex, e)}
             >
-              <div className="header-label-container">
-                <input
-                  type="text"
+              <div className="header-content-inner">
+                <EditableHeader
                   value={col.label}
-                  onChange={(e) => handleColumnNameChange(colIndex, e.target.value)}
-                  className="header-input"
-                  onFocus={() => handleHeaderClick(colIndex, {} as React.MouseEvent)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      // Move to first data cell of this column
-                      navigateToCell(0, colIndex, true);
-                    }
-                  }}
-                  data-header-index={colIndex}
+                  onChange={(newName) => handleColumnNameChange(colIndex, newName)}
+                  onPasteHeaders={(cells) => handleHeaderPaste(colIndex, cells)}
+                  isEditing={selectedHeader === colIndex}
+                  onEditStart={() => {}}
+                  onEditEnd={() => handleHeaderClick(colIndex, {} as React.MouseEvent)}
+                  dataHeaderIndex={colIndex}
                 />
+                <select
+                  className="col-type-select"
+                  value={col.type}
+                  onChange={(e) => {
+                    const newType = e.target.value as "string" | "number" | "date";
+                    handleColumnTypeChange(colIndex, newType);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <option value={COLUMN_TYPES.STRING}>String</option>
+                  <option value={COLUMN_TYPES.NUMBER}>Number</option>
+                  <option value={COLUMN_TYPES.DATE}>Date</option>
+                </select>
               </div>
-              <select
-                className="col-type-select"
-                value={col.type}
-                onChange={(e) => {
-                  const newType = e.target.value as "string" | "number" | "date";
-                  handleColumnTypeChange(colIndex, newType);
-                }}
-                onClick={(e) => e.stopPropagation()}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <option value={COLUMN_TYPES.STRING}>String</option>
-                <option value={COLUMN_TYPES.NUMBER}>Number</option>
-                <option value={COLUMN_TYPES.DATE}>Date</option>
-              </select>
             </div>
-            <div 
-              className="column-resizer"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                const startX = e.clientX;
-                const startWidth = getColumnWidth(col.key);
-                
-                const handleMouseMove = (e: MouseEvent) => {
-                  const deltaX = e.clientX - startX;
-                  const newWidth = startWidth + deltaX;
-                  handleColumnResize(col.key, newWidth);
-                };
-                
-                const handleMouseUp = () => {
-                  document.removeEventListener('mousemove', handleMouseMove);
-                  document.removeEventListener('mouseup', handleMouseUp);
-                };
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-              }}
+            <ColumnResizer
+              columnKey={col.key}
+              resizingColumn={resizingColumn}
+              onResizeStart={handleResizeStart}
             />
           </th>
         ))}

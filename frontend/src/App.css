@@ -14,6 +14,8 @@
   --cell-hover-bg: #f0f0f0;
   --cell-selected-bg: #e3f2fd;
   --cell-selected-border: #2196f3;
+  --title-color: #2c3e50;
+  --title-hover-color: #34495e;
 }
 
 /* Dark mode overrides */
@@ -31,6 +33,8 @@
     --cell-hover-bg: #3a3a3a;
     --cell-selected-bg: #1e3a5f;
     --cell-selected-border: #64b5f6;
+    --title-color: #ecf0f1;
+    --title-hover-color: #bdc3c7;
   }
 }
 
@@ -49,19 +53,72 @@ body {
   min-height: 100vh;
 }
 
-h1 {
-  margin-bottom: 1rem;
+/* Table Container */
+.table-container {
+  display: inline-block;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px var(--shadow-color);
+  background-color: var(--table-bg);
+  margin: 0 auto;
+}
+
+/* Spreadsheet Title Styles */
+.spreadsheet-title-container {
+  margin-bottom: 1.5rem;
+  text-align: left;
+  width: 100%;
+  max-width: 100vw;
+}
+
+.spreadsheet-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--title-color);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+  border: 2px solid transparent;
+  display: inline-block;
+  text-align: left;
+}
+
+.spreadsheet-title:hover {
+  color: var(--title-hover-color);
+  background-color: var(--cell-hover-bg);
+  border-color: var(--cell-border);
+}
+
+.spreadsheet-title-input {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--title-color);
+  background: transparent;
+  border: 2px solid var(--cell-selected-border);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  outline: none;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+  font-family: inherit;
+}
+
+.spreadsheet-title-input:focus {
+  background-color: var(--cell-selected-bg);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
 .table-wrapper {
   border-collapse: collapse;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px var(--shadow-color);
   background-color: var(--table-bg);
-  min-width: 600px;
   color: var(--text-color);
   font-size: 14px;
   border: 2px solid var(--cell-border);
+  width: 100%;
+  table-layout: fixed;
 }
 
 .table-wrapper thead {
@@ -77,11 +134,13 @@ h1 {
   position: relative;
   background-color: var(--bg-color);
   min-width: 80px;
-  max-width: 300px;
+  max-width: 450px; /* Updated to match new max width */
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .table-wrapper td {
-  height: 32px;
+  height: 28px; /* Reduced from 32px for smaller rows */
   vertical-align: middle;
   transition: background-color 0.1s ease;
   overflow: hidden;
@@ -101,10 +160,10 @@ h1 {
   height: 100%;
   display: flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 8px; /* Consistent padding */
   cursor: text;
   position: relative;
-  min-height: 32px;
+  min-height: 28px;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -124,7 +183,7 @@ h1 {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-color);
-  min-height: 32px;
+  min-height: 28px; /* Reduced height */
   box-sizing: border-box;
 }
 
@@ -141,7 +200,7 @@ h1 {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  min-height: 32px;
+  min-height: 28px; /* Reduced height */
   overflow: hidden;
 }
 
@@ -162,16 +221,24 @@ h1 {
 
 .col-header {
   text-align: left;
-  padding: 0.5rem 1rem 0.3rem 1rem; /* less bottom padding */
+  padding: 0; /* Remove padding from header cell */
   line-height: 1.1;
-  border-bottom: none; /* just in case */
-  vertical-align: bottom;
+  border-bottom: none;
+  vertical-align: middle; /* Center vertically like data cells */
   border-bottom: none !important;
   font-weight: 600;
   color: var(--text-color);
   background-color: var(--header-bg);
   border-right: 1px solid var(--cell-border);
   border-bottom: 2px solid var(--cell-border);
+  position: relative; /* For resizer positioning */
+  height: 28px; /* Match body cell height for consistent resizer appearance */
+  box-sizing: border-box;
+}
+
+/* Ensure last column has a right border */
+.col-header:last-child {
+  border-right: 1px solid var(--cell-border);
 }
 
 .header-label {
@@ -185,10 +252,24 @@ h1 {
   font-style: italic;
   font-size: 0.75em;
   color: #999999;
-  margin-top: 0;   /* remove top margin */
-  padding-top: 0;  /* remove top padding */
+  margin-top: 0;
+  padding-top: 0;
   user-select: none;
   line-height: 1;
+}
+
+.header-content-inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2px;
+  align-items: stretch;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.header-content-inner > * {
+  pointer-events: auto;
 }
 
 .col-type-select {
@@ -199,10 +280,14 @@ h1 {
   width: 100%;
   max-width: 120px;
   padding: 2px 4px;
-  border-radius: 4px;
-  border: 1px solid #aaa;
-  background-color: white;
+  margin-left: 0;
+  border: 1px solid var(--input-border);
+  border-radius: 3px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
   cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .col-type-select:hover {
@@ -210,79 +295,52 @@ h1 {
 }
 
 .col-type-select:focus {
-  outline: none;
   border-color: var(--cell-selected-border);
-  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
 }
 
-/* Column resizer */
+/* Excel-style column resizer */
 .column-resizer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 6px;
-  height: 100%;
-  cursor: col-resize;
   background-color: transparent;
-  transition: background-color 0.1s ease;
+  transition: background-color 0.2s ease;
 }
 
 .column-resizer:hover {
   background-color: var(--cell-selected-border);
 }
 
-.column-resizer:active {
+.column-resizer.resizing {
   background-color: var(--cell-selected-border);
+  width: 8px !important;
+  right: -4px !important;
 }
 
-/* Ensure headers have relative positioning for resizer */
-.col-header {
-  position: relative;
-  text-align: left;
-  padding: 0.5rem 1rem 0.3rem 1rem; /* less bottom padding */
-  line-height: 1.1;
-  border-bottom: none; /* just in case */
-  vertical-align: bottom;
-  border-bottom: none !important;
-  font-weight: 600;
-  color: var(--text-color);
-  background-color: var(--header-bg);
-  border-right: 1px solid var(--cell-border);
-  border-bottom: 2px solid var(--cell-border);
+/* Unified column highlighting during resize */
+.column-resizing {
+  background-color: var(--cell-selected-bg) !important;
 }
 
-.header-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  cursor: text;
+.column-resizing .cell-container {
+  background-color: var(--cell-selected-bg) !important;
 }
 
-.header-label-container {
-  min-height: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.header-label {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text-color);
-  cursor: text;
+.column-resizing .header-content {
+  background-color: var(--cell-selected-bg) !important;
 }
 
 .header-input {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-color);
-  background: transparent;
+  width: 100%;
+  min-height: 28px;
   border: none;
   outline: none;
-  width: 100%;
-  padding: 0;
-  margin: 0;
+  background: transparent;
+  color: var(--text-color);
   font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  padding: 0 8px;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .header-input:focus {
@@ -290,12 +348,30 @@ h1 {
   box-shadow: inset 0 0 0 2px var(--cell-selected-border);
 }
 
-/* Header selection state */
+/* Header display mode */
+.header-display {
+  width: 100%;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+  color: var(--text-color);
+  font-weight: 600;
+  box-sizing: border-box;
+  padding: 0 8px;
+}
+
 .header-selected {
-  background-color: var(--cell-selected-bg);
-  box-shadow: inset 0 0 0 2px var(--cell-selected-border);
+  /* Remove the cell-level highlighting */
 }
 
 .header-selected .header-input {
   background-color: var(--cell-selected-bg);
+  box-shadow: inset 0 0 0 2px var(--cell-selected-border);
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin: -2px -4px;
 }
