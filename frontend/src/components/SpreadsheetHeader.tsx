@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { ColumnDefinition } from '../types';
+import type { SpreadsheetMode } from './SpreadsheetToolbar';
 import { COLUMN_TYPES } from '../constants';
 import { useColumnResize } from '../hooks/useColumnResize';
 import { ColumnResizer } from './ColumnResizer';
@@ -8,6 +9,7 @@ import EditableHeader from './EditableHeader';
 interface SpreadsheetHeaderProps {
   columnSchema: ColumnDefinition[];
   selectedHeader: number | null;
+  currentMode: SpreadsheetMode;
   getColumnWidth: (columnKey: string) => number;
   handleColumnResize: (columnKey: string, newWidth: number) => void;
   handleColumnNameChange: (colIndex: number, newName: string) => void;
@@ -15,11 +17,13 @@ interface SpreadsheetHeaderProps {
   handleHeaderClick: (colIndex: number, event: React.MouseEvent) => void;
   handleHeaderPaste: (startCol: number, cells: string[][]) => void;
   handleColumnReorder: (fromIndex: number, toIndex: number) => void;
+  handleDeleteColumn: (colIndex: number) => void;
 }
 
 export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
   columnSchema,
   selectedHeader,
+  currentMode,
   getColumnWidth,
   handleColumnResize,
   handleColumnNameChange,
@@ -27,6 +31,7 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
   handleHeaderClick,
   handleHeaderPaste,
   handleColumnReorder,
+  handleDeleteColumn,
 }) => {
   const { resizingColumn, handleResizeStart } = useColumnResize({
     handleColumnResize,
@@ -35,6 +40,7 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
 
   const [draggedColumn, setDraggedColumn] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
+  const [hoveredColumn, setHoveredColumn] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent, colIndex: number) => {
     setDraggedColumn(colIndex);
@@ -89,6 +95,8 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, colIndex)}
+            onMouseEnter={() => setHoveredColumn(colIndex)}
+            onMouseLeave={() => setHoveredColumn(null)}
           >
             <div 
               className="col-drag-handle"
@@ -96,6 +104,18 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
               onDragStart={(e) => handleDragStart(e, colIndex)}
               onDragEnd={handleDragEnd}
             />
+            {currentMode === 'delete' && hoveredColumn === colIndex && (
+              <button
+                className="delete-column-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteColumn(colIndex);
+                }}
+                title="Delete column"
+              >
+                ❌ Column
+              </button>
+            )}
             <div 
               className="cell-container"
               onClick={(e) => handleHeaderClick(colIndex, e)}
@@ -105,7 +125,7 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
                   value={col.label}
                   onChange={(newName) => handleColumnNameChange(colIndex, newName)}
                   onPasteHeaders={(cells) => handleHeaderPaste(colIndex, cells)}
-                  isEditing={selectedHeader === colIndex}
+                  isEditing={selectedHeader === colIndex && currentMode === 'edit'}
                   onEditStart={() => {}}
                   onEditEnd={() => handleHeaderClick(colIndex, {} as React.MouseEvent)}
                   dataHeaderIndex={colIndex}
@@ -119,6 +139,7 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
                   }}
                   onClick={(e) => e.stopPropagation()}
                   onMouseDown={(e) => e.stopPropagation()}
+                  disabled={currentMode === 'delete'}
                 >
                   <option value={COLUMN_TYPES.STRING}>String</option>
                   <option value={COLUMN_TYPES.NUMBER}>Number</option>

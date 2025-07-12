@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RowData, ColumnDefinition, CellPosition } from '../types';
+import type { SpreadsheetMode } from './SpreadsheetToolbar';
 import EditableCell from '../EditableCell';
 import { useColumnResize } from '../hooks/useColumnResize';
 import { ColumnResizer } from './ColumnResizer';
@@ -8,9 +9,14 @@ interface SpreadsheetBodyProps {
   rows: RowData[];
   columnSchema: ColumnDefinition[];
   selectedCell: CellPosition | null;
+  selectedCells: CellPosition[];
+  isSelecting: boolean;
+  selectionStart: CellPosition | null;
+  currentMode: SpreadsheetMode;
   isEditing: boolean;
   getColumnWidth: (columnKey: string) => number;
   handleCellClick: (rowIndex: number, colIndex: number) => void;
+  handleMouseEnter: (rowIndex: number, colIndex: number) => void;
   onCellChange: (rowIndex: number, columnKey: string, newValue: string) => void;
   handleMultiPaste: (startRow: number, startCol: number, cells: string[][]) => void;
   handleEditStart: () => void;
@@ -23,9 +29,14 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
   rows,
   columnSchema,
   selectedCell,
+  selectedCells,
+  isSelecting,
+  selectionStart,
+  currentMode,
   isEditing,
   getColumnWidth,
   handleCellClick,
+  handleMouseEnter,
   onCellChange,
   handleMultiPaste,
   handleEditStart,
@@ -38,6 +49,14 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
     getColumnWidth,
   });
 
+  const isCellSelected = (rowIndex: number, colIndex: number) => {
+    return selectedCells.some(cell => cell.row === rowIndex && cell.col === colIndex);
+  };
+
+  const isCellSelectionStart = (rowIndex: number, colIndex: number) => {
+    return selectionStart?.row === rowIndex && selectionStart?.col === colIndex;
+  };
+
   return (
     <tbody>
       {rows.map((row, rowIndex) => (
@@ -45,11 +64,14 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
           {columnSchema.map((col, colIndex) => {
             const cellKey = `${rowIndex}-${colIndex}`;
             const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
+            const isMultiSelected = isCellSelected(rowIndex, colIndex);
+            const isSelectionStartCell = isCellSelectionStart(rowIndex, colIndex);
             return (
               <td 
                 key={col.key} 
-                className={isSelected ? "cell-selected" : ""}
+                className={`${isSelected ? "cell-selected" : ""} ${isMultiSelected ? "cell-multi-selected" : ""} ${isSelectionStartCell && isSelecting ? "cell-selection-start" : ""}`}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
+                onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
                 style={{ width: getColumnWidth(col.key), position: 'relative' }}
                 data-column={col.key}
               >
@@ -64,7 +86,7 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
                     columnType={col.type}
                     onChange={(newVal: string) => onCellChange(rowIndex, col.key, newVal)}
                     onPasteCells={(cells: string[][]) => handleMultiPaste(rowIndex, colIndex, cells)}
-                    isEditing={isEditing && selectedCell?.row === rowIndex && selectedCell?.col === colIndex}
+                    isEditing={isEditing && selectedCell?.row === rowIndex && selectedCell?.col === colIndex && currentMode === 'edit'}
                     onEditStart={handleEditStart}
                     onEditEnd={handleEditEnd}
                   />

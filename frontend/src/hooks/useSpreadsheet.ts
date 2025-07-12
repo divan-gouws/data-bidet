@@ -14,6 +14,9 @@ export const useSpreadsheet = () => {
   );
   const [columnSchema, setColumnSchema] = useState<ColumnDefinition[]>(initialColumnSchema);
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
+  const [selectedCells, setSelectedCells] = useState<CellPosition[]>([]);
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionStart, setSelectionStart] = useState<CellPosition | null>(null);
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>({});
   const [isEditing, setIsEditing] = useState(false);
   const [selectedHeader, setSelectedHeader] = useState<number | null>(null);
@@ -243,17 +246,124 @@ export const useSpreadsheet = () => {
     });
   }, [columnSchema]);
 
+  // Multi-cell selection handlers - Cycling click system
+  const handleMouseDown = useCallback((rowIndex: number, colIndex: number): void => {
+    const position = { row: rowIndex, col: colIndex };
+    
+    if (!selectionStart) {
+      // First click - set start position
+      setSelectionStart(position);
+      setSelectedCells([position]);
+      setIsSelecting(true);
+    } else if (isSelecting) {
+      // Second click - complete selection and stop selecting
+      const minRow = Math.min(selectionStart.row, position.row);
+      const maxRow = Math.max(selectionStart.row, position.row);
+      const minCol = Math.min(selectionStart.col, position.col);
+      const maxCol = Math.max(selectionStart.col, position.col);
+      
+      const newSelectedCells: CellPosition[] = [];
+      for (let row = minRow; row <= maxRow; row++) {
+        for (let col = minCol; col <= maxCol; col++) {
+          newSelectedCells.push({ row, col });
+        }
+      }
+      setSelectedCells(newSelectedCells);
+      setIsSelecting(false);
+    } else {
+      // Third click and beyond - start new selection
+      setSelectionStart(position);
+      setSelectedCells([position]);
+      setIsSelecting(true);
+    }
+  }, [selectionStart, isSelecting]);
+
+  const handleMouseEnter = useCallback((rowIndex: number, colIndex: number): void => {
+    if (isSelecting && selectionStart) {
+      // Show preview of selection area on hover
+      const endPosition = { row: rowIndex, col: colIndex };
+      const minRow = Math.min(selectionStart.row, endPosition.row);
+      const maxRow = Math.max(selectionStart.row, endPosition.row);
+      const minCol = Math.min(selectionStart.col, endPosition.col);
+      const maxCol = Math.max(selectionStart.col, endPosition.col);
+      
+      const previewSelectedCells: CellPosition[] = [];
+      for (let row = minRow; row <= maxRow; row++) {
+        for (let col = minCol; col <= maxCol; col++) {
+          previewSelectedCells.push({ row, col });
+        }
+      }
+      setSelectedCells(previewSelectedCells);
+    }
+  }, [isSelecting, selectionStart]);
+
+  const handleMouseUp = useCallback((): void => {
+    // Not needed for click system, but keeping for compatibility
+  }, []);
+
+  const clearSelectedCells = useCallback((): void => {
+    const updatedRows = [...rows];
+    selectedCells.forEach(({ row, col }) => {
+      if (row < updatedRows.length && col < columnSchema.length) {
+        const colKey = columnSchema[col].key;
+        updatedRows[row][colKey] = '';
+      }
+    });
+    setRows(updatedRows);
+    setSelectedCells([]);
+    setSelectionStart(null);
+    setIsSelecting(false);
+  }, [rows, selectedCells, columnSchema]);
+
+  const cancelSelection = useCallback((): void => {
+    setSelectedCells([]);
+    setSelectionStart(null);
+    setIsSelecting(false);
+  }, []);
+
+  const clearSelectedRange = useCallback((): void => {
+    setSelectedCells([]);
+    setSelectionStart(null);
+    setIsSelecting(false);
+  }, []);
+
+  const handleDeleteColumn = useCallback((colIndex: number): void => {
+    if (columnSchema.length <= 1) return; // Don't delete the last column
+    
+    const columnToDelete = columnSchema[colIndex];
+    
+    // Remove column from schema
+    setColumnSchema((prevSchema) => {
+      const newSchema = [...prevSchema];
+      newSchema.splice(colIndex, 1);
+      return newSchema;
+    });
+
+    // Remove column data from all rows
+    setRows((prevRows) => {
+      return prevRows.map(row => {
+        const newRow = { ...row };
+        delete newRow[columnToDelete.key];
+        return newRow;
+      });
+    });
+  }, [columnSchema]);
+
   return {
     // State
     rows,
     columnSchema,
     selectedCell,
+    selectedCells,
+    isSelecting,
+    selectionStart,
     selectedHeader,
     columnWidths,
     isEditing,
     title,
     cellRefs,
     setSelectedCell,
+    setSelectedCells,
     setSelectedHeader,
     setIsEditing,
     // Actions
@@ -275,5 +385,12 @@ export const useSpreadsheet = () => {
     handleColumnReorder,
     handleAddColumn,
     handleAddRow,
+    handleMouseDown,
+    handleMouseEnter,
+    handleMouseUp,
+    clearSelectedCells,
+    cancelSelection,
+    clearSelectedRange,
+    handleDeleteColumn,
   };
 }; 

@@ -205,6 +205,136 @@ body {
   background-color: var(--cell-selected-bg);
 }
 
+/* Multi-selected cell styling for delete mode */
+.cell-multi-selected {
+  background-color: rgba(255, 99, 71, 0.3) !important;
+  box-shadow: inset 0 0 0 2px #ff6347;
+}
+
+.cell-multi-selected .cell-container {
+  background-color: rgba(255, 99, 71, 0.3);
+}
+
+/* Selection start cell styling */
+.cell-selection-start {
+  background-color: rgba(255, 215, 0, 0.6) !important;
+  box-shadow: inset 0 0 0 3px #ffd700;
+}
+
+.cell-selection-start .cell-container {
+  background-color: rgba(255, 215, 0, 0.6);
+}
+
+/* Delete mode buttons */
+.delete-column-button,
+.delete-selection-button,
+.cancel-selection-button,
+.clear-selection-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 10;
+  padding: 4px 8px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cancel-selection-button,
+.clear-selection-button {
+  background-color: #888;
+}
+
+.delete-column-button:hover,
+.delete-selection-button:hover {
+  background-color: #cc0000;
+  transform: scale(1.05);
+}
+
+.cancel-selection-button:hover,
+.clear-selection-button:hover {
+  background-color: #666;
+  transform: scale(1.05);
+}
+
+.delete-column-button:active,
+.delete-selection-button:active,
+.cancel-selection-button:active,
+.clear-selection-button:active {
+  transform: scale(0.95);
+}
+
+.delete-selection-button,
+.cancel-selection-button,
+.clear-selection-button {
+  position: static;
+  margin-left: 16px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+/* Selection buttons container */
+.selection-buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.selection-buttons .delete-selection-button,
+.selection-buttons .clear-selection-button {
+  margin-left: 0;
+}
+
+/* Dark mode adjustments for delete buttons */
+@media (prefers-color-scheme: dark) {
+  .delete-column-button,
+  .delete-selection-button,
+  .cancel-selection-button,
+  .clear-selection-button {
+    background-color: #cc3333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  }
+  
+  .cancel-selection-button,
+  .clear-selection-button {
+    background-color: #666;
+  }
+  
+  .delete-column-button:hover,
+  .delete-selection-button:hover {
+    background-color: #aa0000;
+  }
+  
+  .cancel-selection-button:hover,
+  .clear-selection-button:hover {
+    background-color: #555;
+  }
+  
+  .cell-multi-selected {
+    background-color: rgba(255, 99, 71, 0.4) !important;
+    box-shadow: inset 0 0 0 2px #ff7f50;
+  }
+  
+  .cell-multi-selected .cell-container {
+    background-color: rgba(255, 99, 71, 0.4);
+  }
+  
+  .cell-selection-start {
+    background-color: rgba(255, 215, 0, 0.5) !important;
+    box-shadow: inset 0 0 0 3px #daa520;
+  }
+  
+  .cell-selection-start .cell-container {
+    background-color: rgba(255, 215, 0, 0.5);
+  }
+}
+
 .col-header {
   text-align: left;
   padding: 0; /* Remove padding from header cell */

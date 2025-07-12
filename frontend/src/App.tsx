@@ -15,6 +15,9 @@ function App() {
     rows,
     columnSchema,
     selectedCell,
+    selectedCells,
+    isSelecting,
+    selectionStart,
     selectedHeader,
     isEditing,
     title,
@@ -37,7 +40,15 @@ function App() {
     handleColumnReorder,
     handleAddColumn,
     handleAddRow,
+    handleMouseDown,
+    handleMouseEnter,
+    handleMouseUp,
+    clearSelectedCells,
+    cancelSelection,
+    clearSelectedRange,
+    handleDeleteColumn,
     setSelectedCell,
+    setSelectedCells,
     setSelectedHeader,
     setIsEditing,
   } = useSpreadsheet();
@@ -64,8 +75,10 @@ function App() {
   // Handler to clear cell selection/editing when focusing the title
   const handleFocusTitle = () => {
     setSelectedCell(null);
+    setSelectedCells([]);
     setSelectedHeader(null);
     setIsEditing(false);
+    cancelSelection();
   };
 
   // Handler for mode changes
@@ -73,23 +86,47 @@ function App() {
     setCurrentMode(mode);
     // Clear selections when changing modes
     setSelectedCell(null);
+    setSelectedCells([]);
     setSelectedHeader(null);
     setIsEditing(false);
+    cancelSelection();
   };
 
   // Modified cell click handler based on mode
   const handleCellClickWithMode = (rowIndex: number, colIndex: number) => {
     if (currentMode === 'delete') {
-      // TODO: Implement delete functionality
-      console.log(`Delete cell at row ${rowIndex}, col ${colIndex}`);
+      handleMouseDown(rowIndex, colIndex);
     } else if (currentMode === 'edit') {
       handleCellClick(rowIndex, colIndex);
     }
     // In view mode, we don't do anything on click
   };
 
+  // Enhanced keyboard handler for delete mode
+  const handleKeyDownWithDelete = (e: React.KeyboardEvent) => {
+    if (currentMode === 'delete') {
+      if (e.key === 'Delete' && selectedCells.length > 0) {
+        e.preventDefault();
+        clearSelectedCells();
+        return;
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelSelection();
+        return;
+      }
+    }
+    handleKeyDown(e);
+  };
+
+  // Mouse up handler for multi-cell selection
+  const handleGlobalMouseUp = () => {
+    if (currentMode === 'delete') {
+      handleMouseUp();
+    }
+  };
+
   return (
-    <div className="app-container" onKeyDown={handleKeyDown} tabIndex={0}>
+    <div className="app-container" onKeyDown={handleKeyDownWithDelete} tabIndex={0} onMouseUp={handleGlobalMouseUp}>
       <SpreadsheetTitle 
         title={title}
         onTitleChange={handleTitleChange}
@@ -105,6 +142,10 @@ function App() {
         rows={rows}
         columnSchema={columnSchema}
         selectedCell={selectedCell}
+        selectedCells={selectedCells}
+        isSelecting={isSelecting}
+        selectionStart={selectionStart}
+        currentMode={currentMode}
         selectedHeader={selectedHeader}
         isEditing={isEditing && currentMode === 'edit'}
         getColumnWidth={getColumnWidth}
@@ -115,6 +156,7 @@ function App() {
         handleHeaderClick={handleHeaderClick}
         handleHeaderPaste={handleHeaderPaste}
         handleCellClick={handleCellClickWithMode}
+        handleMouseEnter={handleMouseEnter}
         onCellChange={onCellChange}
         handleMultiPaste={handleMultiPaste}
         handleEditStart={handleEditStart}
@@ -122,6 +164,10 @@ function App() {
         handleColumnReorder={handleColumnReorder}
         handleAddColumn={handleAddColumn}
         handleAddRow={handleAddRow}
+        handleDeleteColumn={handleDeleteColumn}
+        clearSelectedCells={clearSelectedCells}
+        cancelSelection={cancelSelection}
+        clearSelectedRange={clearSelectedRange}
         cellRefs={cellRefs}
       />
     </div>
