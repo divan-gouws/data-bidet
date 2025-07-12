@@ -55,8 +55,13 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
   return (
     <div className="spreadsheet-container">
       <div className="spreadsheet-main">
-        <div className="table-container" style={{ width: `${totalWidth}px` }}>
-          <table className="table-wrapper" border={1} cellPadding={8} cellSpacing={0}>
+        <div className="table-container" style={{ 
+          display: 'inline-block',
+          borderRadius: '8px',
+          boxShadow: '0 2px 12px var(--shadow-color)',
+          backgroundColor: 'var(--table-bg)'
+        }}>
+          <table className="table-wrapper" border={1} cellPadding={8} cellSpacing={0} style={{ width: `${totalWidth}px` }}>
             <SpreadsheetHeader
               columnSchema={columnSchema}
               selectedHeader={selectedHeader}
@@ -84,25 +89,21 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
             />
           </table>
         </div>
-        <div className="table-actions-right">
-          <button 
-            className="add-column-button"
-            onClick={handleAddColumn}
-            title="Add new column"
-          >
-            Add Column
-          </button>
-        </div>
-      </div>
-      <div className="table-actions-bottom">
         <button 
-          className="add-row-button"
-          onClick={handleAddRow}
-          title="Add new row"
+          className="add-column-button"
+          onClick={handleAddColumn}
+          title="Add new column"
         >
-          Add Row
+          Add Column
         </button>
       </div>
+      <button 
+        className="add-row-button"
+        onClick={handleAddRow}
+        title="Add new row"
+      >
+        Add Row
+      </button>
     </div>
   );
 }; 
