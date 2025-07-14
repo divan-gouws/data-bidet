@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import type { ValidationError, ColumnDefinition } from "./types";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { parse, format } from 'date-fns';
+import { parse, format, isValid } from 'date-fns';
 
 interface EditableCellProps {
   value: string;
@@ -154,6 +154,16 @@ const EditableCell: React.FC<EditableCellProps> = ({
   const hasErrors = validationErrors.length > 0;
   const dateFormat = column.validation?.dateFormat || 'yyyy/MM/dd';
 
+  // Helper function to safely parse date
+  const parseDate = (value: string): Date | null => {
+    try {
+      const parsedDate = parse(value, dateFormat, new Date());
+      return isValid(parsedDate) ? parsedDate : null;
+    } catch {
+      return null;
+    }
+  };
+
   return (
     <div className="cell-container" onClick={handleClick} ref={cellRef} onBlur={handleBlur}>
       {isEditing ? (
@@ -190,7 +200,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
               }}
             >
               <DatePicker
-                selected={inputValue ? parse(inputValue, dateFormat, new Date()) : new Date()}
+                selected={inputValue ? parseDate(inputValue) || new Date() : new Date()}
                 onChange={handleDateChange}
                 inline
                 dateFormat={dateFormat}
