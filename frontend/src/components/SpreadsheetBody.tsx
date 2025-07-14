@@ -24,6 +24,8 @@ interface SpreadsheetBodyProps {
   cellRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
   handleColumnResize: (columnKey: string, newWidth: number) => void;
   getValidationErrorsForCell?: (rowIndex: number, columnKey: string) => ValidationError[];
+  columnMappings: { [destColumnKey: string]: string };
+  configColumns: ColumnDefinition[];  // Add configColumns prop
 }
 
 export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
@@ -45,6 +47,8 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
   cellRefs,
   handleColumnResize,
   getValidationErrorsForCell,
+  columnMappings,
+  configColumns,  // Add configColumns to destructuring
 }) => {
   const { resizingColumn, handleResizeStart } = useColumnResize({
     handleColumnResize,
@@ -63,7 +67,6 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
     <tbody>
       {rows.map((row, rowIndex) => (
         <tr key={rowIndex}>
-          {/* Row number cell */}
           <td className="row-number-cell">
             <div className="row-number">{rowIndex + 1}</div>
           </td>
@@ -72,6 +75,32 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
             const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
             const isMultiSelected = isCellSelected(rowIndex, colIndex);
             const isSelectionStartCell = isCellSelectionStart(rowIndex, colIndex);
+            
+            // Find the destination column key that maps to this source column
+            const destinationColumnKey = Object.keys(columnMappings).find(
+              destKey => columnMappings[destKey] === col.key
+            );
+
+            // Find the destination column definition from configColumns prop
+            const destinationColumn = destinationColumnKey ? 
+              configColumns.find(configCol => configCol.key === destinationColumnKey) : 
+              undefined;
+            
+            // Add isMapped property and merge validation rules from destination column
+            const columnWithMapping = {
+              ...col,
+              isMapped: !!destinationColumnKey,
+              type: destinationColumn?.type || col.type,
+              validation: destinationColumn?.validation || col.validation
+            };
+            
+            console.log(`Row ${rowIndex}, Col ${colIndex} (${col.key}):`, {
+              sourceColumnKey: col.key,
+              destinationColumnKey,
+              columnMappings,
+              hasMapping: !!destinationColumnKey
+            });
+
             return (
               <td 
                 key={col.key} 
@@ -89,15 +118,14 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
                 >
                   <EditableCell
                     value={row[col.key]}
-                    column={col}
+                    column={columnWithMapping}
                     onChange={(newVal: string) => onCellChange(rowIndex, col.key, newVal)}
                     onPasteCells={(cells: string[][]) => handleMultiPaste(rowIndex, colIndex, cells)}
                     isEditing={isEditing && selectedCell?.row === rowIndex && selectedCell?.col === colIndex && currentMode === 'edit'}
                     onEditStart={handleEditStart}
                     onEditEnd={handleEditEnd}
-                    validationErrors={getValidationErrorsForCell ? getValidationErrorsForCell(rowIndex, col.key) : []}
+                    validationErrors={getValidationErrorsForCell && destinationColumnKey ? getValidationErrorsForCell(rowIndex, destinationColumnKey) : []}
                   />
-                  {/* Resizer handle for every cell */}
                   <ColumnResizer
                     columnKey={col.key}
                     resizingColumn={resizingColumn}

@@ -139,6 +139,15 @@ function App() {
     }
   };
 
+  // Debug logging
+  console.log('App rendering with:', {
+    currentMode,
+    title,
+    rows: rows?.length,
+    columnSchema: columnSchema?.length,
+    configColumns: configColumns?.length
+  });
+
   return (
     <div className="app-container" onKeyDown={handleKeyDownWithDelete} tabIndex={0} onMouseUp={handleGlobalMouseUp}>
       <SpreadsheetTitle 
@@ -204,6 +213,8 @@ function App() {
           clearSelectedRange={clearSelectedRange}
           cellRefs={cellRefs}
           getValidationErrorsForCell={getValidationErrorsForCell}
+          columnMappings={columnMappings}
+          configColumns={configColumns}  // Pass configColumns to SpreadsheetTable
         />
       )}
     </div>

@@ -36,6 +36,8 @@ interface SpreadsheetTableProps {
   clearSelectedRange: () => void;
   cellRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
   getValidationErrorsForCell?: (rowIndex: number, columnKey: string) => ValidationError[];
+  columnMappings: { [destColumnKey: string]: string };
+  configColumns: ColumnDefinition[];  // Add configColumns prop
 }
 
 export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
@@ -70,6 +72,8 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
   clearSelectedRange,
   cellRefs,
   getValidationErrorsForCell,
+  columnMappings,
+  configColumns,  // Add configColumns to destructuring
 }) => {
   const totalWidth = getTotalTableWidth();
 
@@ -169,6 +173,8 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
               cellRefs={cellRefs}
               handleColumnResize={handleColumnResize}
               getValidationErrorsForCell={getValidationErrorsForCell}
+              columnMappings={columnMappings}
+              configColumns={configColumns}  // Pass configColumns to SpreadsheetBody
             />
           </table>
         </div>

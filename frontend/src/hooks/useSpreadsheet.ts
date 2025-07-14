@@ -444,9 +444,16 @@ export const useSpreadsheet = () => {
   }, []);
 
   const getValidationErrorsForCell = useCallback((rowIndex: number, columnKey: string) => {
-    return validationResult.errors.filter(error => 
+    console.log('getValidationErrorsForCell called with:', { rowIndex, columnKey });
+    console.log('All validation errors:', validationResult.errors);
+    
+    // Find errors for this cell using the destination column key
+    const errors = validationResult.errors.filter(error => 
       error.row === rowIndex && error.columnKey === columnKey
     );
+    
+    console.log('Filtered errors for cell:', errors);
+    return errors;
   }, [validationResult.errors]);
 
   // Auto-run validation when data, config, or mappings change

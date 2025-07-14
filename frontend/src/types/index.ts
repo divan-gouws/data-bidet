@@ -16,6 +16,7 @@ export interface ColumnDefinition {
   type: 'string' | 'number' | 'date';
   optional?: boolean;
   validation?: ValidationConstraints;
+  isMapped?: boolean;  // Indicates if this column is mapped in the edit interface
 }
 
 export interface RowData {

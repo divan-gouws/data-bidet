@@ -65,7 +65,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDatePickerPosition({
-        top: rect.bottom + window.scrollY + 4,  // 4px margin
+        top: rect.bottom + window.scrollY,  // Remove the 4px margin
         left: rect.left + window.scrollX
       });
     }
@@ -169,7 +169,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
               className={`cell-input ${hasErrors ? 'has-validation-errors' : ''}`}
               autoFocus
             />
-            {column.type === 'date' && (
+            {column.type === 'date' && column.isMapped && (
               <button
                 ref={buttonRef}
                 className="date-picker-button"
