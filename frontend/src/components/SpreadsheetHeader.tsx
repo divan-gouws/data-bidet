@@ -85,6 +85,8 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
   return (
     <thead>
       <tr>
+        {/* Row numbers header */}
+        <th className="row-number-header"></th>
         {columnSchema.map((col, colIndex) => (
           <th 
             key={col.key} 
@@ -130,21 +132,22 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
                   onEditEnd={() => handleHeaderClick(colIndex, {} as React.MouseEvent)}
                   dataHeaderIndex={colIndex}
                 />
-                <select
-                  className="col-type-select"
-                  value={col.type}
-                  onChange={(e) => {
-                    const newType = e.target.value as "string" | "number" | "date";
-                    handleColumnTypeChange(colIndex, newType);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  disabled={currentMode === 'delete'}
-                >
-                  <option value={COLUMN_TYPES.STRING}>String</option>
-                  <option value={COLUMN_TYPES.NUMBER}>Number</option>
-                  <option value={COLUMN_TYPES.DATE}>Date</option>
-                </select>
+                {currentMode !== 'edit' && currentMode !== 'delete' && (
+                  <select
+                    className="col-type-select"
+                    value={col.type}
+                    onChange={(e) => {
+                      const newType = e.target.value as "string" | "number" | "date";
+                      handleColumnTypeChange(colIndex, newType);
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    <option value={COLUMN_TYPES.STRING}>String</option>
+                    <option value={COLUMN_TYPES.NUMBER}>Number</option>
+                    <option value={COLUMN_TYPES.DATE}>Date</option>
+                  </select>
+                )}
               </div>
             </div>
             <ColumnResizer

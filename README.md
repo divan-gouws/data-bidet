@@ -2,7 +2,7 @@
 
 A modern, interactive spreadsheet application built with React (frontend) and FastAPI (backend).
 
-## 🏗️ Architecture
+## Architecture
 
 ### Frontend (React + TypeScript)
 - **Components**: Modular React components for spreadsheet functionality
@@ -37,7 +37,7 @@ npm install
 npm run dev
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 data-bidet/
@@ -79,7 +79,7 @@ data-bidet/
 └── README.md
 ```
 
-## 🎯 Features
+## Features
 
 ### Frontend Features
 - **Interactive Spreadsheet**: Click to edit cells
@@ -96,7 +96,7 @@ data-bidet/
 - **CORS Support**: Configured for frontend integration
 - **API Documentation**: Auto-generated docs at `/docs`
 
-## 🔧 API Endpoints
+## API Endpoints
 
 - `GET /api/v1/spreadsheet/` - Get default spreadsheet
 - `POST /api/v1/spreadsheet/validate` - Validate spreadsheet data
@@ -104,7 +104,7 @@ data-bidet/
 - `POST /api/v1/spreadsheet/row` - Add new row
 - `POST /api/v1/spreadsheet/column` - Add new column
 
-## 🎨 Code Quality
+## Code Quality
 
 ### Frontend
 - **TypeScript**: Full type safety
@@ -118,7 +118,7 @@ data-bidet/
 - **Logging**: Comprehensive logging system
 - **Error Handling**: Proper HTTP status codes and error messages
 
-## 🚀 Development
+## Development
 
 ### Running in Development Mode
 1. Start the backend: `uvicorn app.main:app --reload`
@@ -137,7 +137,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-## 📝 Contributing
+## Contributing
 
 1. Follow the existing code structure
 2. Add proper TypeScript types
@@ -145,7 +145,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000
 4. Write meaningful commit messages
 5. Test your changes thoroughly
 
-## 🔍 Code Organization Principles
+## Code Organization Principles
 
 - **Separation of Concerns**: UI, logic, and data are separated
 - **Single Responsibility**: Each component/hook has one clear purpose

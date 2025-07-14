@@ -1,6 +1,8 @@
 
 import "./App.css";
 import { SpreadsheetTable } from "./components/SpreadsheetTable";
+import { ConfigurationTable } from "./components/ConfigurationTable";
+import { MappingTable } from "./components/MappingTable";
 import { SpreadsheetTitle } from "./components/SpreadsheetTitle";
 import { SpreadsheetToolbar } from "./components/SpreadsheetToolbar";
 import type { SpreadsheetMode } from "./components/SpreadsheetToolbar";
@@ -14,6 +16,8 @@ function App() {
   const {
     rows,
     columnSchema,
+    configColumns,
+    columnMappings,
     selectedCell,
     selectedCells,
     isSelecting,
@@ -47,6 +51,16 @@ function App() {
     cancelSelection,
     clearSelectedRange,
     handleDeleteColumn,
+    handleConfigColumnNameChange,
+    handleConfigColumnTypeChange,
+    handleConfigColumnOptionalChange,
+    handleAddConfigColumn,
+    handleDeleteConfigColumn,
+    handleColumnMapping,
+    clearColumnMapping,
+    getMappingValidation,
+    handleValidationConstraintChange,
+    getValidationErrorsForCell,
     setSelectedCell,
     setSelectedCells,
     setSelectedHeader,
@@ -138,38 +152,60 @@ function App() {
         onModeChange={handleModeChange}
       />
       
-      <SpreadsheetTable
-        rows={rows}
-        columnSchema={columnSchema}
-        selectedCell={selectedCell}
-        selectedCells={selectedCells}
-        isSelecting={isSelecting}
-        selectionStart={selectionStart}
-        currentMode={currentMode}
-        selectedHeader={selectedHeader}
-        isEditing={isEditing && currentMode === 'edit'}
-        getColumnWidth={getColumnWidth}
-        getTotalTableWidth={getTotalTableWidth}
-        handleColumnResize={handleColumnResize}
-        handleColumnNameChange={handleColumnNameChange}
-        handleColumnTypeChange={handleColumnTypeChange}
-        handleHeaderClick={handleHeaderClick}
-        handleHeaderPaste={handleHeaderPaste}
-        handleCellClick={handleCellClickWithMode}
-        handleMouseEnter={handleMouseEnter}
-        onCellChange={onCellChange}
-        handleMultiPaste={handleMultiPaste}
-        handleEditStart={handleEditStart}
-        handleEditEnd={handleEditEnd}
-        handleColumnReorder={handleColumnReorder}
-        handleAddColumn={handleAddColumn}
-        handleAddRow={handleAddRow}
-        handleDeleteColumn={handleDeleteColumn}
-        clearSelectedCells={clearSelectedCells}
-        cancelSelection={cancelSelection}
-        clearSelectedRange={clearSelectedRange}
-        cellRefs={cellRefs}
-      />
+      {currentMode === 'configure' ? (
+        <ConfigurationTable
+          configColumns={configColumns}
+          handleConfigColumnNameChange={handleConfigColumnNameChange}
+          handleConfigColumnTypeChange={handleConfigColumnTypeChange}
+          handleConfigColumnOptionalChange={handleConfigColumnOptionalChange}
+          handleValidationConstraintChange={handleValidationConstraintChange}
+          handleAddConfigColumn={handleAddConfigColumn}
+          handleDeleteConfigColumn={handleDeleteConfigColumn}
+        />
+      ) : currentMode === 'map' ? (
+        <MappingTable
+          sourceColumns={columnSchema}
+          destinationColumns={configColumns}
+          columnMappings={columnMappings}
+          handleColumnMapping={handleColumnMapping}
+          clearColumnMapping={clearColumnMapping}
+          getMappingValidation={getMappingValidation}
+        />
+      ) : (
+        <SpreadsheetTable
+          rows={rows}
+          columnSchema={columnSchema}
+          selectedCell={selectedCell}
+          selectedCells={selectedCells}
+          isSelecting={isSelecting}
+          selectionStart={selectionStart}
+          currentMode={currentMode}
+          selectedHeader={selectedHeader}
+          isEditing={isEditing && currentMode === 'edit'}
+          getColumnWidth={getColumnWidth}
+          getTotalTableWidth={getTotalTableWidth}
+          handleColumnResize={handleColumnResize}
+          handleColumnNameChange={handleColumnNameChange}
+          handleColumnTypeChange={handleColumnTypeChange}
+          handleHeaderClick={handleHeaderClick}
+          handleHeaderPaste={handleHeaderPaste}
+          handleCellClick={handleCellClickWithMode}
+          handleMouseEnter={handleMouseEnter}
+          onCellChange={onCellChange}
+          handleMultiPaste={handleMultiPaste}
+          handleEditStart={handleEditStart}
+          handleEditEnd={handleEditEnd}
+          handleColumnReorder={handleColumnReorder}
+          handleAddColumn={handleAddColumn}
+          handleAddRow={handleAddRow}
+          handleDeleteColumn={handleDeleteColumn}
+          clearSelectedCells={clearSelectedCells}
+          cancelSelection={cancelSelection}
+          clearSelectedRange={clearSelectedRange}
+          cellRefs={cellRefs}
+          getValidationErrorsForCell={getValidationErrorsForCell}
+        />
+      )}
     </div>
   );
 }

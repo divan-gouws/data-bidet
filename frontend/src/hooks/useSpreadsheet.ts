@@ -1,18 +1,33 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { 
   RowData, 
   ColumnDefinition, 
   CellPosition, 
-  ColumnWidths 
+  ColumnWidths,
+  ValidationResult,
+  ValidationConstraints 
 } from '../types';
 import { SPREADSHEET_CONSTANTS } from '../constants';
 import { initialColumnSchema, createInitialRows, getDefaultTitle } from '../data/initialData';
+import { validateSpreadsheetData } from '../utils/spreadsheetUtils';
 
 export const useSpreadsheet = () => {
   const [rows, setRows] = useState<RowData[]>(() => 
     createInitialRows(SPREADSHEET_CONSTANTS.DEFAULT_ROW_COUNT)
   );
   const [columnSchema, setColumnSchema] = useState<ColumnDefinition[]>(initialColumnSchema);
+  
+  // Configuration table state - separate from main spreadsheet
+  const [configColumns, setConfigColumns] = useState<ColumnDefinition[]>(() => 
+    initialColumnSchema.map(col => ({ ...col })) // Deep copy to avoid references
+  );
+  
+  // Column mapping state - maps destination column keys to source column keys
+  const [columnMappings, setColumnMappings] = useState<{ [destColumnKey: string]: string }>({});
+  
+  // Validation state
+  const [validationResult, setValidationResult] = useState<ValidationResult>({ isValid: true, errors: [] });
+  
   const [selectedCell, setSelectedCell] = useState<CellPosition | null>(null);
   const [selectedCells, setSelectedCells] = useState<CellPosition[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
@@ -349,10 +364,136 @@ export const useSpreadsheet = () => {
     });
   }, [columnSchema]);
 
+  // Configuration table handlers
+  const handleConfigColumnNameChange = useCallback((colIndex: number, newName: string): void => {
+    setConfigColumns((prevColumns) => {
+      const updatedColumns = [...prevColumns];
+      updatedColumns[colIndex] = { ...updatedColumns[colIndex], label: newName };
+      return updatedColumns;
+    });
+  }, []);
+
+  const handleConfigColumnTypeChange = useCallback((colIndex: number, newType: 'string' | 'number' | 'date'): void => {
+    setConfigColumns((prevColumns) => {
+      const updatedColumns = [...prevColumns];
+      updatedColumns[colIndex] = { ...updatedColumns[colIndex], type: newType };
+      return updatedColumns;
+    });
+  }, []);
+
+  const handleConfigColumnOptionalChange = useCallback((colIndex: number, isOptional: boolean): void => {
+    setConfigColumns((prevColumns) => {
+      const updatedColumns = [...prevColumns];
+      updatedColumns[colIndex] = { ...updatedColumns[colIndex], optional: isOptional };
+      return updatedColumns;
+    });
+  }, []);
+
+  const handleAddConfigColumn = useCallback((): void => {
+    setConfigColumns((prevColumns) => {
+      const newColumnKey = `col${prevColumns.length + 1}`;
+      const newColumn: ColumnDefinition = {
+        key: newColumnKey,
+        label: `Column ${prevColumns.length + 1}`,
+        type: 'string',
+        optional: false
+      };
+      return [...prevColumns, newColumn];
+    });
+  }, []);
+
+  const handleDeleteConfigColumn = useCallback((colIndex: number): void => {
+    if (configColumns.length <= 1) return; // Don't delete the last column
+    
+    setConfigColumns((prevColumns) => {
+      const newColumns = [...prevColumns];
+      const deletedColumn = newColumns[colIndex];
+      newColumns.splice(colIndex, 1);
+      
+      // Remove mapping for deleted column
+      setColumnMappings((prevMappings) => {
+        const newMappings = { ...prevMappings };
+        delete newMappings[deletedColumn.key];
+        return newMappings;
+      });
+      
+      return newColumns;
+    });
+  }, [configColumns.length]);
+
+  // Validation constraint handlers
+  const handleValidationConstraintChange = useCallback((colIndex: number, constraints: ValidationConstraints): void => {
+    setConfigColumns((prevColumns) => {
+      const updatedColumns = [...prevColumns];
+      updatedColumns[colIndex] = { 
+        ...updatedColumns[colIndex], 
+        validation: { ...updatedColumns[colIndex].validation, ...constraints }
+      };
+      return updatedColumns;
+    });
+  }, []);
+
+  const runValidation = useCallback((): ValidationResult => {
+    const result = validateSpreadsheetData(rows, configColumns, columnMappings);
+    setValidationResult(result);
+    return result;
+  }, [rows, configColumns, columnMappings]);
+
+  const clearValidation = useCallback((): void => {
+    setValidationResult({ isValid: true, errors: [] });
+  }, []);
+
+  const getValidationErrorsForCell = useCallback((rowIndex: number, columnKey: string) => {
+    return validationResult.errors.filter(error => 
+      error.row === rowIndex && error.columnKey === columnKey
+    );
+  }, [validationResult.errors]);
+
+  // Auto-run validation when data, config, or mappings change
+  useEffect(() => {
+    const result = validateSpreadsheetData(rows, configColumns, columnMappings);
+    setValidationResult(result);
+  }, [rows, configColumns, columnMappings]);
+
+  // Column mapping handlers
+  const handleColumnMapping = useCallback((destColumnKey: string, sourceColumnKey: string): void => {
+    setColumnMappings((prevMappings) => ({
+      ...prevMappings,
+      [destColumnKey]: sourceColumnKey
+    }));
+  }, []);
+
+  const clearColumnMapping = useCallback((destColumnKey: string): void => {
+    setColumnMappings((prevMappings) => {
+      const newMappings = { ...prevMappings };
+      delete newMappings[destColumnKey];
+      return newMappings;
+    });
+  }, []);
+
+  const getUnmappedDestinationColumns = useCallback((): ColumnDefinition[] => {
+    return configColumns.filter(col => !col.optional && !columnMappings[col.key]);
+  }, [configColumns, columnMappings]);
+
+  const getMappingValidation = useCallback(() => {
+    const unmappedDestColumns = getUnmappedDestinationColumns();
+    const requiredColumns = configColumns.filter(col => !col.optional);
+    return {
+      isValid: unmappedDestColumns.length === 0,
+      unmappedColumns: unmappedDestColumns,
+      totalDestColumns: configColumns.length,
+      requiredColumns: requiredColumns.length,
+      mappedColumns: Object.keys(columnMappings).length
+    };
+  }, [getUnmappedDestinationColumns, configColumns, columnMappings]);
+
   return {
     // State
     rows,
     columnSchema,
+    configColumns,
+    columnMappings,
+    validationResult,
     selectedCell,
     selectedCells,
     isSelecting,
@@ -392,5 +533,21 @@ export const useSpreadsheet = () => {
     cancelSelection,
     clearSelectedRange,
     handleDeleteColumn,
+    // Configuration table actions
+    handleConfigColumnNameChange,
+    handleConfigColumnTypeChange,
+    handleConfigColumnOptionalChange,
+    handleAddConfigColumn,
+    handleDeleteConfigColumn,
+    // Column mapping actions
+    handleColumnMapping,
+    clearColumnMapping,
+    getUnmappedDestinationColumns,
+    getMappingValidation,
+    // Validation actions
+    handleValidationConstraintChange,
+    runValidation,
+    clearValidation,
+    getValidationErrorsForCell,
   };
 }; 

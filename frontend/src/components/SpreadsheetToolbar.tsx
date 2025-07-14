@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type SpreadsheetMode = 'edit' | 'delete' | 'view';
+export type SpreadsheetMode = 'new' | 'open' | 'save' | 'configure' | 'map' | 'edit' | 'delete';
 
 interface SpreadsheetToolbarProps {
   currentMode: SpreadsheetMode;
@@ -15,11 +15,39 @@ export const SpreadsheetToolbar: React.FC<SpreadsheetToolbarProps> = ({
     <div className="spreadsheet-toolbar">
       <div className="toolbar-group">
         <button
-          className={`toolbar-button ${currentMode === 'view' ? 'active' : ''}`}
-          onClick={() => onModeChange('view')}
-          title="View Mode"
+          className={`toolbar-button ${currentMode === 'new' ? 'active' : ''}`}
+          onClick={() => onModeChange('new')}
+          title="New Mode"
         >
-          👁️ View
+          📄 New
+        </button>
+        <button
+          className={`toolbar-button ${currentMode === 'open' ? 'active' : ''}`}
+          onClick={() => onModeChange('open')}
+          title="Open Mode"
+        >
+          📂 Open
+        </button>
+        <button
+          className={`toolbar-button ${currentMode === 'save' ? 'active' : ''}`}
+          onClick={() => onModeChange('save')}
+          title="Save Mode"
+        >
+          💾 Save
+        </button>
+        <button
+          className={`toolbar-button ${currentMode === 'configure' ? 'active' : ''}`}
+          onClick={() => onModeChange('configure')}
+          title="Configure Mode"
+        >
+          ⚙️ Configure
+        </button>
+        <button
+          className={`toolbar-button ${currentMode === 'map' ? 'active' : ''}`}
+          onClick={() => onModeChange('map')}
+          title="Map Mode"
+        >
+          🗺️ Map
         </button>
         <button
           className={`toolbar-button ${currentMode === 'edit' ? 'active' : ''}`}

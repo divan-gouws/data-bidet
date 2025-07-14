@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RowData, ColumnDefinition, CellPosition } from '../types';
+import type { RowData, ColumnDefinition, CellPosition, ValidationError } from '../types';
 import type { SpreadsheetMode } from './SpreadsheetToolbar';
 import { SpreadsheetHeader } from './SpreadsheetHeader';
 import { SpreadsheetBody } from './SpreadsheetBody';
@@ -35,6 +35,7 @@ interface SpreadsheetTableProps {
   cancelSelection: () => void;
   clearSelectedRange: () => void;
   cellRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
+  getValidationErrorsForCell?: (rowIndex: number, columnKey: string) => ValidationError[];
 }
 
 export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
@@ -68,11 +69,66 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
   cancelSelection,
   clearSelectedRange,
   cellRefs,
+  getValidationErrorsForCell,
 }) => {
   const totalWidth = getTotalTableWidth();
 
+  // Calculate validation statistics
+  const validationStats = React.useMemo(() => {
+    // Helper function to check if a row has any data
+    const hasData = (row: RowData): boolean => {
+      return Object.values(row).some(value => value && value.trim() !== '');
+    };
+
+    // Filter rows to only include those with data
+    const rowsWithData = rows.filter(hasData);
+
+    if (!getValidationErrorsForCell) {
+      return { totalRows: rowsWithData.length, rowsWithErrors: 0, totalErrors: 0 };
+    }
+
+    const rowsWithErrorsSet = new Set<number>();
+    let totalErrors = 0;
+
+    rows.forEach((row, rowIndex) => {
+      // Only count validation errors for rows that have data
+      if (hasData(row)) {
+        columnSchema.forEach(col => {
+          const errors = getValidationErrorsForCell(rowIndex, col.key);
+          if (errors.length > 0) {
+            rowsWithErrorsSet.add(rowIndex);
+            totalErrors += errors.length;
+          }
+        });
+      }
+    });
+
+    return {
+      totalRows: rowsWithData.length,
+      rowsWithErrors: rowsWithErrorsSet.size,
+      totalErrors
+    };
+  }, [rows, columnSchema, getValidationErrorsForCell]);
+
   return (
     <div className="spreadsheet-container">
+      {/* Validation Statistics */}
+      <div className="validation-stats">
+        <span className="validation-stat">
+          Total Rows: <strong>{validationStats.totalRows}</strong>
+        </span>
+        {validationStats.rowsWithErrors > 0 && (
+          <span className="validation-stat error">
+            Rows with Errors: <strong>{validationStats.rowsWithErrors}</strong>
+          </span>
+        )}
+        {validationStats.totalErrors > 0 && (
+          <span className="validation-stat error">
+            Total Errors: <strong>{validationStats.totalErrors}</strong>
+          </span>
+        )}
+      </div>
+
       <div className="spreadsheet-main">
         <div className="table-container" style={{ 
           display: 'inline-block',
@@ -112,6 +168,7 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
               handleEditEnd={handleEditEnd}
               cellRefs={cellRefs}
               handleColumnResize={handleColumnResize}
+              getValidationErrorsForCell={getValidationErrorsForCell}
             />
           </table>
         </div>

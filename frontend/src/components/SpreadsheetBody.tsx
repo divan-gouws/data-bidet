@@ -1,5 +1,5 @@
 import React from 'react';
-import type { RowData, ColumnDefinition, CellPosition } from '../types';
+import type { RowData, ColumnDefinition, CellPosition, ValidationError } from '../types';
 import type { SpreadsheetMode } from './SpreadsheetToolbar';
 import EditableCell from '../EditableCell';
 import { useColumnResize } from '../hooks/useColumnResize';
@@ -23,6 +23,7 @@ interface SpreadsheetBodyProps {
   handleEditEnd: () => void;
   cellRefs: React.MutableRefObject<{ [key: string]: HTMLDivElement | null }>;
   handleColumnResize: (columnKey: string, newWidth: number) => void;
+  getValidationErrorsForCell?: (rowIndex: number, columnKey: string) => ValidationError[];
 }
 
 export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
@@ -43,6 +44,7 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
   handleEditEnd,
   cellRefs,
   handleColumnResize,
+  getValidationErrorsForCell,
 }) => {
   const { resizingColumn, handleResizeStart } = useColumnResize({
     handleColumnResize,
@@ -61,6 +63,10 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
     <tbody>
       {rows.map((row, rowIndex) => (
         <tr key={rowIndex}>
+          {/* Row number cell */}
+          <td className="row-number-cell">
+            <div className="row-number">{rowIndex + 1}</div>
+          </td>
           {columnSchema.map((col, colIndex) => {
             const cellKey = `${rowIndex}-${colIndex}`;
             const isSelected = selectedCell?.row === rowIndex && selectedCell?.col === colIndex;
@@ -83,12 +89,13 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
                 >
                   <EditableCell
                     value={row[col.key]}
-                    columnType={col.type}
+                    column={col}
                     onChange={(newVal: string) => onCellChange(rowIndex, col.key, newVal)}
                     onPasteCells={(cells: string[][]) => handleMultiPaste(rowIndex, colIndex, cells)}
                     isEditing={isEditing && selectedCell?.row === rowIndex && selectedCell?.col === colIndex && currentMode === 'edit'}
                     onEditStart={handleEditStart}
                     onEditEnd={handleEditEnd}
+                    validationErrors={getValidationErrorsForCell ? getValidationErrorsForCell(rowIndex, col.key) : []}
                   />
                   {/* Resizer handle for every cell */}
                   <ColumnResizer

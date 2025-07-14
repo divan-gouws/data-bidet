@@ -97,6 +97,7 @@ body {
   box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
+/* Ensure table wrapper doesn't add borders to row numbers */
 .table-wrapper {
   border-collapse: collapse;
   background-color: var(--table-bg);
@@ -125,6 +126,23 @@ body {
   box-sizing: border-box;
 }
 
+/* Override borders for first column (row numbers) with higher specificity */
+.table-wrapper.table-wrapper th:first-child,
+.table-wrapper.table-wrapper td:first-child {
+  background-color: transparent !important;
+}
+
+/* Ensure row number header is also borderless */
+.row-number-header {
+  background-color: transparent !important;
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
 .table-wrapper td {
   height: 28px; /* Reduced from 32px for smaller rows */
   vertical-align: middle;
@@ -138,6 +156,12 @@ body {
 
 .table-wrapper tr:hover td.cell-selected {
   background-color: var(--cell-selected-bg) !important;
+}
+
+/* Keep row numbers borderless even on hover */
+.table-wrapper tr:hover th:first-child,
+.table-wrapper tr:hover td:first-child {
+  background-color: transparent !important;
 }
 
 /* Cell container styling */
@@ -158,16 +182,45 @@ body {
   background-color: var(--cell-hover-bg);
 }
 
+/* Row numbers - target first column to make it borderless */
+.table-wrapper thead tr th:first-child,
+.table-wrapper tbody tr td:first-child {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  text-align: center !important;
+  font-weight: 400 !important;
+  position: relative;
+  vertical-align: middle;
+  color: var(--text-color);
+}
+
+.row-number {
+  font-size: 0.75em;
+  color: var(--text-color);
+  opacity: 0.4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+  font-weight: 400;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+  min-height: 28px;
+  background-color: transparent !important;
+  padding: 6px 0;  /* Add vertical padding to match data cells */
+  box-sizing: border-box;
+}
+
 /* Cell display mode */
 .cell-display {
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center;
-  padding: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex-direction: column;
+  justify-content: center;
+  padding: 6px 0;
   color: var(--text-color);
   min-height: 28px; /* Reduced height */
   box-sizing: border-box;
@@ -382,17 +435,37 @@ body {
   align-items: flex-start;
   box-sizing: border-box;
   pointer-events: none;
-  padding: 4px 8px;
+  padding: 8px;
+  min-height: 40px;
+  justify-content: center;
 }
 
-.header-content-inner .header-input,
+.header-content-inner .header-input {
+  width: 100%;
+  min-width: 60px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+}
+
 .header-content-inner .header-display {
   width: 100%;
   min-width: 60px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
 }
 
 .header-content-inner > * {
   pointer-events: auto;
+}
+
+/* Clean header styling for edit mode */
+.col-header .header-content-inner .header-display {
+  color: var(--text-color);
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.02em;
 }
 
 .col-type-select {
@@ -648,6 +721,701 @@ body {
 
 .toolbar-button:active {
   transform: translateY(1px);
+}
+
+/* Configuration Table Styles */
+.configuration-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.configuration-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--title-color);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.configuration-table-wrapper {
+  background-color: var(--table-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px var(--shadow-color);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.configuration-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--table-bg);
+  color: var(--text-color);
+}
+
+.config-header {
+  background-color: var(--header-bg);
+  color: var(--text-color);
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--cell-border);
+  font-size: 14px;
+}
+
+.config-row {
+  border-bottom: 1px solid var(--cell-border);
+  transition: background-color 0.1s ease;
+}
+
+.config-row:hover {
+  background-color: var(--cell-hover-bg);
+}
+
+.config-cell {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.config-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.config-input:focus {
+  outline: none;
+  border-color: var(--cell-selected-border);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.config-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.config-select:focus {
+  outline: none;
+  border-color: var(--cell-selected-border);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.config-delete-button {
+  padding: 0.5rem;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.config-delete-button:hover:not(:disabled) {
+  background-color: #cc0000;
+  transform: scale(1.05);
+}
+
+.config-delete-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.config-delete-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.config-add-button {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--header-bg);
+  color: var(--text-color);
+  border: 1px solid var(--cell-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+}
+
+.config-add-button:hover {
+  background-color: var(--cell-hover-bg);
+  border-color: var(--cell-selected-border);
+}
+
+.config-add-button:active {
+  transform: translateY(1px);
+}
+
+/* Configuration checkbox styles */
+.config-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.config-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--cell-selected-border);
+}
+
+.config-checkbox-text {
+  font-size: 14px;
+  color: var(--text-color);
+}
+
+/* Dark mode adjustments for configuration table */
+@media (prefers-color-scheme: dark) {
+  .config-delete-button {
+    background-color: #cc3333;
+  }
+  
+  .config-delete-button:hover:not(:disabled) {
+    background-color: #aa0000;
+  }
+  
+  .config-delete-button:disabled {
+    background-color: #555;
+  }
+}
+
+/* Mapping Table Styles */
+.mapping-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.mapping-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--title-color);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.mapping-description {
+  color: var(--text-color);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.mapping-status {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.mapping-status.valid {
+  background-color: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.mapping-status.invalid {
+  background-color: rgba(255, 152, 0, 0.1);
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.mapping-status-text {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.unmapped-columns {
+  font-size: 0.9em;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+.mapping-table-wrapper {
+  background-color: var(--table-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px var(--shadow-color);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.mapping-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--table-bg);
+  color: var(--text-color);
+}
+
+.mapping-header {
+  background-color: var(--header-bg);
+  color: var(--text-color);
+  font-weight: 600;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 2px solid var(--cell-border);
+  font-size: 14px;
+}
+
+.mapping-row {
+  border-bottom: 1px solid var(--cell-border);
+  transition: background-color 0.1s ease;
+}
+
+.mapping-row:hover {
+  background-color: var(--cell-hover-bg);
+}
+
+.mapping-row.unmapped {
+  background-color: rgba(255, 152, 0, 0.05);
+}
+
+.mapping-row.optional {
+  background-color: rgba(158, 158, 158, 0.05);
+}
+
+.mapping-cell {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+.destination-column-name {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.column-type {
+  font-style: italic;
+  color: var(--text-color);
+  opacity: 0.8;
+  text-transform: capitalize;
+}
+
+.required-status {
+  font-size: 0.9em;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+.required-status.required {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.required-status.optional {
+  background-color: rgba(158, 158, 158, 0.1);
+  color: #9e9e9e;
+  border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+.mapping-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.mapping-select:focus {
+  outline: none;
+  border-color: var(--cell-selected-border);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.mapping-clear-button {
+  padding: 0.5rem;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mapping-clear-button:hover {
+  background-color: #cc0000;
+  transform: scale(1.05);
+}
+
+.mapping-clear-button:active {
+  transform: scale(0.95);
+}
+
+.source-columns-info {
+  background-color: var(--table-bg);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.source-columns-info h3 {
+  margin: 0 0 1rem 0;
+  color: var(--title-color);
+  font-size: 1.1rem;
+}
+
+.source-columns-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.source-column-tag {
+  background-color: var(--header-bg);
+  color: var(--text-color);
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9em;
+  border: 1px solid var(--cell-border);
+}
+
+/* Dark mode adjustments for mapping table */
+@media (prefers-color-scheme: dark) {
+  .mapping-status.valid {
+    background-color: rgba(76, 175, 80, 0.15);
+    border: 1px solid rgba(76, 175, 80, 0.4);
+  }
+  
+  .mapping-status.invalid {
+    background-color: rgba(255, 152, 0, 0.15);
+    border: 1px solid rgba(255, 152, 0, 0.4);
+  }
+  
+  .mapping-row.unmapped {
+    background-color: rgba(255, 152, 0, 0.08);
+  }
+  
+  .mapping-row.optional {
+    background-color: rgba(158, 158, 158, 0.08);
+  }
+  
+  .mapping-clear-button {
+    background-color: #cc3333;
+  }
+  
+  .mapping-clear-button:hover {
+    background-color: #aa0000;
+  }
+  
+  .required-status.required {
+    background-color: rgba(76, 175, 80, 0.15);
+    color: #81c784;
+    border: 1px solid rgba(76, 175, 80, 0.4);
+  }
+  
+  .required-status.optional {
+    background-color: rgba(158, 158, 158, 0.15);
+    color: #bdbdbd;
+    border: 1px solid rgba(158, 158, 158, 0.4);
+  }
+}
+
+/* Validation Controls in Configuration Table */
+.validation-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.validation-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9em;
+  color: var(--text-color);
+}
+
+.validation-checkbox {
+  margin: 0;
+  cursor: pointer;
+}
+
+.validation-text {
+  user-select: none;
+  cursor: pointer;
+}
+
+.validation-string-controls,
+.validation-number-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.validation-input {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 0.85em;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.validation-input:focus {
+  outline: none;
+  border-color: var(--cell-selected-border);
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.validation-input::placeholder {
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+
+
+/* Inline Validation Error Display */
+.cell-editing-container {
+  position: relative;
+}
+
+.cell-input.has-validation-errors {
+  border-color: #f44336;
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+.cell-input.has-validation-errors:focus {
+  border-color: #f44336;
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+.cell-display {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.cell-value {
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.validation-error-underneath {
+  color: #888;
+  font-size: 0.85em;
+  font-style: italic;
+  margin-top: 0.1em;
+  line-height: 1.1;
+}
+
+.validation-error-underneath em {
+  font-style: italic;
+  color: #888;
+}
+
+.validation-errors-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #333;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  margin-top: 2px;
+}
+
+.validation-error-tooltip-item {
+  margin-bottom: 0.25rem;
+}
+
+.validation-error-tooltip-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Dark mode adjustments for validation */
+@media (prefers-color-scheme: dark) {
+  .cell-input.has-validation-errors {
+    background-color: rgba(244, 67, 54, 0.08);
+  }
+  
+    .validation-error-underneath {
+    color: #aaa;
+  }
+
+  .validation-error-underneath em {
+    color: #aaa;
+  }
+  
+  .validation-errors-tooltip {
+    background-color: #444;
+  }
+}
+
+/* Validation Statistics Display */
+.validation-stats {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--header-bg);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9em;
+  color: var(--text-color);
+  border: 1px solid var(--cell-border);
+}
+
+.validation-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.validation-stat.error {
+  color: #d32f2f;
+}
+
+.validation-stat strong {
+  font-weight: 600;
+}
+
+@media (prefers-color-scheme: dark) {
+  .validation-stat.error {
+    color: #f44336;
+  }
+}
+
+/* Cell input wrapper for date fields */
+.cell-input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+}
+
+.date-picker-button {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 14px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.date-picker-button:hover {
+  opacity: 1;
+}
+
+.date-picker-container {
+  position: fixed;  /* Changed from absolute to fixed */
+  z-index: 1000;
+  background: var(--bg-color);
+  border: 1px solid var(--cell-border);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  margin-top: 4px;
+}
+
+/* Style the react-datepicker to match our theme */
+.react-datepicker {
+  font-family: inherit;
+  background-color: var(--bg-color);
+  border: 1px solid var(--cell-border);
+  border-radius: 4px;
+  color: var(--text-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.react-datepicker-popper {
+  z-index: 1000;
+}
+
+.react-datepicker__header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--cell-border);
+  color: var(--text-color);
+}
+
+.react-datepicker__current-month {
+  color: var(--text-color);
+}
+
+.react-datepicker__day-name {
+  color: var(--text-color);
+}
+
+.react-datepicker__day {
+  color: var(--text-color);
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--cell-hover-bg);
+}
+
+.react-datepicker__day--selected {
+  background-color: var(--cell-selected-bg);
+  color: var(--text-color);
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--cell-selected-bg);
+  color: var(--text-color);
+}
+
+/* Validation date format help text */
+.validation-date-format-help {
+  font-size: 0.8em;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-top: 4px;
+  font-style: italic;
 }
 
 
