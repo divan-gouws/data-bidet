@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { ColumnDefinition, ValidationConstraints } from '../types';
 import { COLUMN_TYPES } from '../constants';
+import { PicklistEditor } from './PicklistEditor';
 
 interface ConfigurationTableProps {
   configColumns: ColumnDefinition[];
   handleConfigColumnNameChange: (colIndex: number, newName: string) => void;
-  handleConfigColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date') => void;
+  handleConfigColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date' | 'picklist') => void;
   handleConfigColumnOptionalChange: (colIndex: number, isOptional: boolean) => void;
   handleValidationConstraintChange: (colIndex: number, constraints: ValidationConstraints) => void;
   handleAddConfigColumn: () => void;
@@ -21,6 +22,12 @@ export const ConfigurationTable: React.FC<ConfigurationTableProps> = ({
   handleAddConfigColumn,
   handleDeleteConfigColumn,
 }) => {
+  const [editingPicklist, setEditingPicklist] = useState<number | null>(null);
+
+  const handlePicklistSave = (colIndex: number, values: string[]) => {
+    handleValidationConstraintChange(colIndex, { picklistValues: values });
+  };
+
   return (
     <div className="configuration-container">
       <h2 className="configuration-title">Column Configuration</h2>
@@ -51,12 +58,13 @@ export const ConfigurationTable: React.FC<ConfigurationTableProps> = ({
                 <td className="config-cell">
                   <select
                     value={column.type}
-                    onChange={(e) => handleConfigColumnTypeChange(index, e.target.value as 'string' | 'number' | 'date')}
+                    onChange={(e) => handleConfigColumnTypeChange(index, e.target.value as 'string' | 'number' | 'date' | 'picklist')}
                     className="config-select"
                   >
                     <option value={COLUMN_TYPES.STRING}>String</option>
                     <option value={COLUMN_TYPES.NUMBER}>Number</option>
                     <option value={COLUMN_TYPES.DATE}>Date</option>
+                    <option value={COLUMN_TYPES.PICKLIST}>Picklist</option>
                   </select>
                 </td>
                 <td className="config-cell">
@@ -162,6 +170,28 @@ export const ConfigurationTable: React.FC<ConfigurationTableProps> = ({
                         </div>
                       </div>
                     )}
+
+                    {column.type === 'picklist' && (
+                      <div className="validation-picklist-controls">
+                        <button
+                          onClick={() => setEditingPicklist(index)}
+                          className="edit-picklist-button"
+                        >
+                          Edit Picklist Values ({column.validation?.picklistValues?.length || 0} values)
+                        </button>
+                        <label className="validation-label">
+                          <input
+                            type="checkbox"
+                            checked={column.validation?.caseSensitive || false}
+                            onChange={(e) => handleValidationConstraintChange(index, { 
+                              caseSensitive: e.target.checked 
+                            })}
+                            className="validation-checkbox"
+                          />
+                          <span className="validation-text">Case Sensitive</span>
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td className="config-cell">
@@ -187,6 +217,18 @@ export const ConfigurationTable: React.FC<ConfigurationTableProps> = ({
       >
         ➕ Add Column
       </button>
+
+      {editingPicklist !== null && (
+        <PicklistEditor
+          column={configColumns[editingPicklist]}
+          onClose={() => setEditingPicklist(null)}
+          onSave={(values) => {
+            handlePicklistSave(editingPicklist, values);
+            setEditingPicklist(null);
+          }}
+          isOpen={true}
+        />
+      )}
     </div>
   );
 }; 

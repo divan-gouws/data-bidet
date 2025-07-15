@@ -36,7 +36,7 @@ interface EditableCellProps {
   validationErrors?: ValidationError[];
 }
 
-const EditableCell: React.FC<EditableCellProps> = ({
+export const EditableCell: React.FC<EditableCellProps> = ({
   value,
   column,
   onChange,
@@ -68,9 +68,13 @@ const EditableCell: React.FC<EditableCellProps> = ({
     }
   }, [value, isEditing]);
 
+  // Determine if this cell should show picklist dropdown
+  const picklistValues = column.validation?.picklistValues || [];
+  const isPicklistCell = column.type === 'picklist' && picklistValues.length > 0;
+
   // Filter picklist values based on input value
-  const filteredPicklistValues = column.type === 'picklist' && column.validation?.picklistValues 
-    ? column.validation.picklistValues.filter(option =>
+  const filteredPicklistValues = isPicklistCell
+    ? picklistValues.filter(option =>
         !inputValue || option.toLowerCase().includes(inputValue.toLowerCase())
       )
     : [];
@@ -78,7 +82,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
   // Helper function to safely parse date
   const parseDate = (value: string): Date | null => {
     try {
-      const parsedDate = parse(value, dateFormat, new Date());
+      const parsedDate = parse(value, column.validation?.dateFormat || 'yyyy/MM/dd', new Date());
       return isValid(parsedDate) ? parsedDate : null;
     } catch {
       return null;
@@ -104,9 +108,8 @@ const EditableCell: React.FC<EditableCellProps> = ({
     const newValue = e.target.value;
     setInputValue(newValue);
     
-    // For picklist columns, show dropdown
-    if (column.type === 'picklist' && isEditing) {
-      setShowPicklistDropdown(true);
+    // For picklist columns, only show dropdown if it's already open
+    if (isPicklistCell && isEditing && showPicklistDropdown) {
       setSelectedPicklistIndex(-1);
       updateDropdownPosition();
     }
@@ -132,7 +135,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
       onEditStart();
     }
     
-    if (column.type === 'picklist' && column.validation?.picklistValues) {
+    if (isPicklistCell) {
       setShowPicklistDropdown(!showPicklistDropdown);
       updateDropdownPosition();
     }
@@ -242,16 +245,12 @@ const EditableCell: React.FC<EditableCellProps> = ({
   };
 
   const handleFocus = () => {
-    if (column.type === 'picklist' && column.validation?.picklistValues) {
-      setShowPicklistDropdown(true);
-      setSelectedPicklistIndex(-1);
-      updateDropdownPosition();
-    }
+    // Don't automatically show dropdown on focus - only when button is clicked
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // Handle picklist-specific keyboard events
-    if (column.type === 'picklist') {
+    if (isPicklistCell) {
       handlePicklistKeyDown(e);
       return;
     }
@@ -278,18 +277,17 @@ const EditableCell: React.FC<EditableCellProps> = ({
     }
   }, [isEditing]);
 
-  // Close datepicker when clicking outside
+  // Effect to handle clicking outside the dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
       if (
-        !buttonRef.current?.contains(target) &&
-        !dropdownRef.current?.contains(target) &&
-        !document.querySelector('.react-datepicker')?.contains(target)
+        dropdownRef.current && 
+        !dropdownRef.current.contains(event.target as Node) &&
+        cellRef.current &&
+        !cellRef.current.contains(event.target as Node)
       ) {
-        setShowDatePicker(false);
         setShowPicklistDropdown(false);
-        setIsDatePickerClick(false);
+        setSelectedPicklistIndex(-1);
       }
     };
 
@@ -299,117 +297,123 @@ const EditableCell: React.FC<EditableCellProps> = ({
     };
   }, []);
 
-  const hasErrors = validationErrors.length > 0;
-  const dateFormat = column.validation?.dateFormat || 'yyyy/MM/dd';
-
   return (
-    <div className="cell-container" onClick={handleClick} ref={cellRef} onBlur={handleBlur}>
-      {isEditing ? (
-        <div className="cell-editing-container">
-          <div className="cell-input-wrapper">
+    <div 
+      ref={cellRef}
+      className={`editable-cell ${isEditing ? 'editing' : ''} ${validationErrors.length > 0 ? 'has-error' : ''}`}
+      onClick={handleClick}
+    >
+      <div className="cell-content">
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
             <input
               ref={inputRef}
               type="text"
               value={inputValue}
               onChange={handleChange}
-              onPaste={handlePaste}
-              onKeyDown={handleKeyDown}
               onFocus={handleFocus}
-              className={`cell-input ${hasErrors ? 'has-validation-errors' : ''}`}
-              autoFocus
+              onBlur={handleBlur}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              className="cell-input"
+              style={{ width: '100%', border: 'none', outline: 'none', background: 'transparent' }}
+              readOnly={!isEditing}
             />
-            {column.type === 'date' && column.isMapped && (
+
+            {column.type === 'date' && isEditing && (
               <button
                 ref={buttonRef}
                 className="date-picker-button"
                 onClick={handleDatePickerClick}
-                title="Open calendar"
+                tabIndex={-1}
               >
                 📅
               </button>
             )}
-            {column.type === 'picklist' && column.validation?.picklistValues && (
+
+            {isPicklistCell && isEditing && (
               <button
-                className="picklist-button"
+                ref={buttonRef}
+                className="picklist-dropdown-button"
                 onClick={handleDropdownButtonClick}
-                title="Open picklist"
+                tabIndex={-1}
               >
-                ⬇️
+                ▼
               </button>
             )}
           </div>
-          {showDatePicker && column.type === 'date' && (
-            <div 
-              className="date-picker-container"
-              style={{
-                position: 'fixed',
-                top: `${datePickerPosition.top}px`,
-                left: `${datePickerPosition.left}px`
-              }}
-            >
-              <DatePicker
-                selected={inputValue ? parseDate(inputValue) || new Date() : new Date()}
-                onChange={handleDateChange}
-                inline
-                dateFormat={dateFormat}
-              />
-            </div>
-          )}
-          {showPicklistDropdown && column.type === 'picklist' && column.validation?.picklistValues && (
-            <div
-              className="picklist-dropdown"
-              style={{
-                position: 'fixed',
-                top: `${dropdownPosition.top}px`,
-                left: `${dropdownPosition.left}px`,
-                width: `${dropdownPosition.width}px`
-              }}
-              ref={dropdownRef}
-            >
-              <ul className="picklist-options">
-                {filteredPicklistValues.length > 0 ? (
-                  filteredPicklistValues.map((option, index) => (
-                    <li
-                      key={option}
-                      className={`picklist-option ${selectedPicklistIndex === index ? 'selected' : ''}`}
-                      onClick={() => handlePicklistSelect(option)}
-                      onMouseEnter={() => setSelectedPicklistIndex(index)}
-                    >
-                      {option}
-                    </li>
-                  ))
-                ) : (
-                  <li className="picklist-option no-results">No matching options</li>
-                )}
-              </ul>
-            </div>
-          )}
-          {hasErrors && (
-            <div className="validation-errors-tooltip">
+
+          {/* Validation errors displayed inside cell */}
+          {validationErrors.length > 0 && (
+            <div style={{ 
+              color: '#888', 
+              fontSize: '0.75em', 
+              fontStyle: 'italic', 
+              marginTop: '1px',
+              marginLeft: '8px', // Align with the input padding
+              marginBottom: '6px', // Add padding below to match top padding
+              lineHeight: '1.1'
+            }}>
               {validationErrors.map((error, index) => (
-                <div key={index} className="validation-error-tooltip-item">
+                <div key={index}>
                   {error.message}
                 </div>
               ))}
             </div>
           )}
         </div>
-      ) : (
-        <div className={`cell-display ${hasErrors ? 'has-validation-errors' : ''}`}>
-          {inputValue}
-          {hasErrors && (
-            <div className="validation-errors-tooltip">
-              {validationErrors.map((error, index) => (
-                <div key={index} className="validation-error-tooltip-item">
-                  {error.message}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+
+        {showDatePicker && column.type === 'date' && (
+          <div
+            className="date-picker-container"
+            style={{
+              position: 'fixed',
+              top: `${datePickerPosition.top}px`,
+              left: `${datePickerPosition.left}px`,
+              zIndex: 1000
+            }}
+          >
+            <DatePicker
+              selected={parseDate(inputValue)}
+              onChange={handleDateChange}
+              dateFormat={column.validation?.dateFormat || 'yyyy/MM/dd'}
+              inline
+            />
+          </div>
+        )}
+
+        {showPicklistDropdown && isPicklistCell && (
+          <div
+            ref={dropdownRef}
+            className="picklist-dropdown"
+            style={{
+              position: 'fixed',
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              maxHeight: '200px',
+              overflowY: 'auto',
+              zIndex: 1000
+            }}
+          >
+            {filteredPicklistValues.map((option, index) => (
+              <div
+                key={option}
+                className={`picklist-option ${index === selectedPicklistIndex ? 'selected' : ''}`}
+                onClick={() => handlePicklistSelect(option)}
+                onMouseEnter={() => setSelectedPicklistIndex(index)}
+              >
+                {option}
+              </div>
+            ))}
+            {filteredPicklistValues.length === 0 && (
+              <div className="no-results">
+                No matching values
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
-};
-
-export default EditableCell; 
+}; 

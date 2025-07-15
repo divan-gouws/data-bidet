@@ -36,7 +36,7 @@ export const validateCellConstraints = (
     const currentRow = allRows[rowIndex];
     if (currentRow && hasRowData(currentRow)) {
       errors.push({
-        row: rowIndex,
+        row: rowIndex + 1, // Convert to 1-based index for display
         columnKey: column.key,  // Using destination column key
         message: `${column.label} cannot be null or empty`,
         type: 'nullable'
@@ -56,7 +56,7 @@ export const validateCellConstraints = (
     const decimalRegex = /^-?\d*\.?\d+$/;
     if (!decimalRegex.test(value)) {
       errors.push({
-        row: rowIndex,
+        row: rowIndex + 1, // Convert to 1-based index for display
         columnKey: column.key,  // Using destination column key
         message: `${column.label} must be a valid number`,
         type: 'type'
@@ -69,7 +69,7 @@ export const validateCellConstraints = (
     if (!isNaN(numValue)) {
       if (constraints.min !== undefined && numValue < constraints.min) {
         errors.push({
-          row: rowIndex,
+          row: rowIndex + 1, // Convert to 1-based index for display
           columnKey: column.key,  // Using destination column key
           message: `${column.label} must be at least ${constraints.min}`,
           type: 'min'
@@ -78,7 +78,7 @@ export const validateCellConstraints = (
 
       if (constraints.max !== undefined && numValue > constraints.max) {
         errors.push({
-          row: rowIndex,
+          row: rowIndex + 1, // Convert to 1-based index for display
           columnKey: column.key,  // Using destination column key
           message: `${column.label} must be at most ${constraints.max}`,
           type: 'max'
@@ -94,7 +94,7 @@ export const validateCellConstraints = (
       const parsedDate = parse(value, dateFormat, new Date());
       if (!isValid(parsedDate)) {
         errors.push({
-          row: rowIndex,
+          row: rowIndex + 1, // Convert to 1-based index for display
           columnKey: column.key,  // Using destination column key
           message: `${column.label} must be in format ${dateFormat}`,
           type: 'dateFormat'
@@ -103,7 +103,7 @@ export const validateCellConstraints = (
       }
     } catch {
       errors.push({
-        row: rowIndex,
+        row: rowIndex + 1, // Convert to 1-based index for display
         columnKey: column.key,  // Using destination column key
         message: `${column.label} must be in format ${dateFormat}`,
         type: 'dateFormat'
@@ -117,7 +117,7 @@ export const validateCellConstraints = (
     // String-specific constraint validations
     if (constraints.minLength !== undefined && value.length < constraints.minLength) {
       errors.push({
-        row: rowIndex,
+        row: rowIndex + 1, // Convert to 1-based index for display
         columnKey: column.key,  // Using destination column key
         message: `${column.label} must be at least ${constraints.minLength} characters long`,
         type: 'minLength'
@@ -126,7 +126,7 @@ export const validateCellConstraints = (
 
     if (constraints.maxLength !== undefined && value.length > constraints.maxLength) {
       errors.push({
-        row: rowIndex,
+        row: rowIndex + 1, // Convert to 1-based index for display
         columnKey: column.key,  // Using destination column key
         message: `${column.label} must be at most ${constraints.maxLength} characters long`,
         type: 'maxLength'
@@ -138,7 +138,7 @@ export const validateCellConstraints = (
         const regex = new RegExp(constraints.pattern);
         if (!regex.test(value)) {
           errors.push({
-            row: rowIndex,
+            row: rowIndex + 1, // Convert to 1-based index for display
             columnKey: column.key,  // Using destination column key
             message: `${column.label} does not match the required pattern`,
             type: 'pattern'
@@ -147,6 +147,29 @@ export const validateCellConstraints = (
       } catch {
         console.warn(`Invalid regex pattern for column ${column.label}:`, constraints.pattern);
       }
+    }
+  }
+
+  // Picklist type validation
+  else if (column.type === 'picklist') {
+    const picklistValues = constraints.picklistValues || [];
+    const caseSensitive = constraints.caseSensitive || false;
+
+    let isValid = false;
+    if (caseSensitive) {
+      isValid = picklistValues.includes(value);
+    } else {
+      isValid = picklistValues.some(v => v.toLowerCase() === value.toLowerCase());
+    }
+
+    if (!isValid) {
+      errors.push({
+        row: rowIndex + 1, // Convert to 1-based index for display
+        columnKey: column.key,
+        message: `${column.label} must be one of the allowed values`,
+        type: 'picklist'
+      });
+      return errors; // Don't continue with other validations if type is wrong
     }
   }
 
@@ -160,7 +183,7 @@ export const validateCellConstraints = (
       
       if (duplicateRowIndex !== -1) {
         errors.push({
-          row: rowIndex,
+          row: rowIndex + 1, // Convert to 1-based index for display
           columnKey: column.key,  // Using destination column key
           message: `${column.label} must be unique. Duplicate found in row ${duplicateRowIndex + 1}`,
           type: 'unique'

@@ -5,6 +5,7 @@ export const initialColumnSchema: ColumnDefinition[] = [
   { key: "name", label: "Name" },
   { key: "age", label: "Age" },
   { key: "birthdate", label: "Birthdate" },
+  { key: "category", label: "Category" },
 ];
 
 export const createInitialRows = (count: number): RowData[] => {
@@ -12,6 +13,7 @@ export const createInitialRows = (count: number): RowData[] => {
     name: '',
     age: '',
     birthdate: '',
+    category: '',
   }));
 };
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { RowData, ColumnDefinition, CellPosition, ValidationError } from '../types';
 import type { SpreadsheetMode } from './SpreadsheetToolbar';
-import EditableCell from '../EditableCell';
+import { EditableCell } from './EditableCell';
 import { useColumnResize } from '../hooks/useColumnResize';
 import { ColumnResizer } from './ColumnResizer';
 
@@ -86,21 +86,15 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
               configColumns.find(configCol => configCol.key === destinationColumnKey) : 
               undefined;
             
-            // Add isMapped property and merge validation rules from destination column
-            const columnWithMapping = {
-              ...col,
-              isMapped: !!destinationColumnKey,
-              type: destinationColumn?.type,  // Only use destination column type
-              validation: destinationColumn?.validation
-            };
-            
-            console.log(`Row ${rowIndex}, Col ${colIndex} (${col.key}):`, {
-              sourceColumnKey: col.key,
-              destinationColumnKey,
-              columnMappings,
-              hasMapping: !!destinationColumnKey,
-              type: destinationColumn?.type
-            });
+            // For mapped columns, use the destination column's type and validation
+            // For unmapped columns, use the source column's properties
+            const columnWithMapping = destinationColumn ? {
+              key: col.key,
+              label: col.label,
+              type: destinationColumn.type,
+              validation: destinationColumn.validation,
+              isMapped: true
+            } : col;
 
             return (
               <td 

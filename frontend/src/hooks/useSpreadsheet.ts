@@ -463,9 +463,22 @@ export const useSpreadsheet = () => {
     console.log('getValidationErrorsForCell called with:', { rowIndex, columnKey });
     console.log('All validation errors:', validationResult.errors);
     
+    // Log each error in detail
+    validationResult.errors.forEach((error, index) => {
+      console.log(`Error ${index}:`, {
+        row: error.row,
+        columnKey: error.columnKey,
+        message: error.message,
+        type: error.type,
+        matchesRow: error.row === rowIndex + 1,
+        matchesColumn: error.columnKey === columnKey
+      });
+    });
+    
     // Find errors for this cell using the destination column key
+    // Note: rowIndex is 0-based from UI, but errors store 1-based indices
     const errors = validationResult.errors.filter(error => 
-      error.row === rowIndex && error.columnKey === columnKey
+      error.row === rowIndex + 1 && error.columnKey === columnKey
     );
     
     console.log('Filtered errors for cell:', errors);

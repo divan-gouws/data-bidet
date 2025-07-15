@@ -20,4 +20,5 @@ export const COLUMN_TYPES = {
   STRING: 'string',
   NUMBER: 'number',
   DATE: 'date',
+  PICKLIST: 'picklist'
 } as const; 
