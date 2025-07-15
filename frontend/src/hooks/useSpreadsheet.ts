@@ -19,7 +19,29 @@ export const useSpreadsheet = () => {
   
   // Configuration table state - separate from main spreadsheet
   const [configColumns, setConfigColumns] = useState<ColumnDefinition[]>(() => 
-    initialColumnSchema.map(col => ({ ...col })) // Deep copy to avoid references
+    initialColumnSchema.map(col => {
+      // Set default types based on column name hints
+      let type: 'string' | 'number' | 'date' = 'string';
+      const lowerLabel = col.label.toLowerCase();
+      
+      if (lowerLabel.includes('date') || lowerLabel.includes('dob') || lowerLabel.includes('birth')) {
+        type = 'date';
+      } else if (
+        lowerLabel.includes('age') || 
+        lowerLabel.includes('amount') || 
+        lowerLabel.includes('price') || 
+        lowerLabel.includes('quantity') ||
+        lowerLabel.includes('number')
+      ) {
+        type = 'number';
+      }
+      
+      return { 
+        ...col,
+        type,
+        optional: false // Set all columns as required by default
+      };
+    })
   );
   
   // Column mapping state - maps destination column keys to source column keys
@@ -70,13 +92,7 @@ export const useSpreadsheet = () => {
     });
   }, []);
 
-  const handleColumnTypeChange = useCallback((colIndex: number, newType: 'string' | 'number' | 'date'): void => {
-    setColumnSchema((cols) => {
-      const updated = [...cols];
-      updated[colIndex] = { ...updated[colIndex], type: newType };
-      return updated;
-    });
-  }, []);
+
 
   const handleMultiPaste = useCallback((startRow: number, startCol: number, cells: string[][]): void => {
     const updatedRows = [...rows];
@@ -235,8 +251,7 @@ export const useSpreadsheet = () => {
       const newColumnKey = `col${prevSchema.length + 1}`;
       const newColumn: ColumnDefinition = {
         key: newColumnKey,
-        label: `Column ${prevSchema.length + 1}`,
-        type: 'string'
+        label: `Column ${prevSchema.length + 1}`
       };
       return [...prevSchema, newColumn];
     });
@@ -395,8 +410,9 @@ export const useSpreadsheet = () => {
       const newColumn: ColumnDefinition = {
         key: newColumnKey,
         label: `Column ${prevColumns.length + 1}`,
-        type: 'string',
-        optional: false
+        type: 'string', // Default to string for new columns
+        optional: false, // Default to required
+        validation: {} // Initialize empty validation constraints
       };
       return [...prevColumns, newColumn];
     });
@@ -520,7 +536,6 @@ export const useSpreadsheet = () => {
     handleColumnResize,
     handleTitleChange,
     handleColumnNameChange,
-    handleColumnTypeChange,
     handleMultiPaste,
     handleHeaderPaste,
     onCellChange,

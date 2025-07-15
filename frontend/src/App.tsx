@@ -31,7 +31,6 @@ function App() {
     handleColumnResize,
     handleTitleChange,
     handleColumnNameChange,
-    handleColumnTypeChange,
     handleMultiPaste,
     handleHeaderPaste,
     onCellChange,
@@ -195,7 +194,6 @@ function App() {
           getTotalTableWidth={getTotalTableWidth}
           handleColumnResize={handleColumnResize}
           handleColumnNameChange={handleColumnNameChange}
-          handleColumnTypeChange={handleColumnTypeChange}
           handleHeaderClick={handleHeaderClick}
           handleHeaderPaste={handleHeaderPaste}
           handleCellClick={handleCellClickWithMode}

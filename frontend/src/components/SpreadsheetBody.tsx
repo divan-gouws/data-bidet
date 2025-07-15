@@ -90,15 +90,16 @@ export const SpreadsheetBody: React.FC<SpreadsheetBodyProps> = ({
             const columnWithMapping = {
               ...col,
               isMapped: !!destinationColumnKey,
-              type: destinationColumn?.type || col.type,
-              validation: destinationColumn?.validation || col.validation
+              type: destinationColumn?.type,  // Only use destination column type
+              validation: destinationColumn?.validation
             };
             
             console.log(`Row ${rowIndex}, Col ${colIndex} (${col.key}):`, {
               sourceColumnKey: col.key,
               destinationColumnKey,
               columnMappings,
-              hasMapping: !!destinationColumnKey
+              hasMapping: !!destinationColumnKey,
+              type: destinationColumn?.type
             });
 
             return (

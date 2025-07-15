@@ -2,9 +2,9 @@ import type { ColumnDefinition, RowData } from '../types';
 import { SPREADSHEET_CONSTANTS } from '../constants';
 
 export const initialColumnSchema: ColumnDefinition[] = [
-  { key: "name", label: "Name", type: "string" },
-  { key: "age", label: "Age", type: "number" },
-  { key: "birthdate", label: "Birthdate", type: "date" },
+  { key: "name", label: "Name" },
+  { key: "age", label: "Age" },
+  { key: "birthdate", label: "Birthdate" },
 ];
 
 export const createInitialRows = (count: number): RowData[] => {

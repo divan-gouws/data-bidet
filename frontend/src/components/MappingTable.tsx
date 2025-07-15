@@ -95,7 +95,7 @@ export const MappingTable: React.FC<MappingTableProps> = ({
                       <option value="">-- Select Source Column --</option>
                       {sourceColumns.map((sourceColumn) => (
                         <option key={sourceColumn.key} value={sourceColumn.key}>
-                          {sourceColumn.label} ({sourceColumn.type})
+                          {sourceColumn.label}
                         </option>
                       ))}
                     </select>
@@ -124,7 +124,7 @@ export const MappingTable: React.FC<MappingTableProps> = ({
         <div className="source-columns-list">
           {sourceColumns.map((sourceColumn) => (
             <span key={sourceColumn.key} className="source-column-tag">
-              {sourceColumn.label} ({sourceColumn.type})
+              {sourceColumn.label}
             </span>
           ))}
         </div>

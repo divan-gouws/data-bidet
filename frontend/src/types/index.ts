@@ -13,7 +13,7 @@ export interface ValidationConstraints {
 export interface ColumnDefinition {
   key: string;
   label: string;
-  type: 'string' | 'number' | 'date';
+  type?: 'string' | 'number' | 'date';  // Only required for destination columns, not needed for source columns
   optional?: boolean;
   validation?: ValidationConstraints;
   isMapped?: boolean;  // Indicates if this column is mapped in the edit interface

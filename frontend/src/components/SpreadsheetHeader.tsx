@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { ColumnDefinition } from '../types';
 import type { SpreadsheetMode } from './SpreadsheetToolbar';
-import { COLUMN_TYPES } from '../constants';
 import { useColumnResize } from '../hooks/useColumnResize';
 import { ColumnResizer } from './ColumnResizer';
 import EditableHeader from './EditableHeader';
@@ -13,7 +12,7 @@ interface SpreadsheetHeaderProps {
   getColumnWidth: (columnKey: string) => number;
   handleColumnResize: (columnKey: string, newWidth: number) => void;
   handleColumnNameChange: (colIndex: number, newName: string) => void;
-  handleColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date') => void;
+
   handleHeaderClick: (colIndex: number, event: React.MouseEvent) => void;
   handleHeaderPaste: (startCol: number, cells: string[][]) => void;
   handleColumnReorder: (fromIndex: number, toIndex: number) => void;
@@ -27,7 +26,6 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
   getColumnWidth,
   handleColumnResize,
   handleColumnNameChange,
-  handleColumnTypeChange,
   handleHeaderClick,
   handleHeaderPaste,
   handleColumnReorder,
@@ -132,22 +130,7 @@ export const SpreadsheetHeader: React.FC<SpreadsheetHeaderProps> = ({
                   onEditEnd={() => handleHeaderClick(colIndex, {} as React.MouseEvent)}
                   dataHeaderIndex={colIndex}
                 />
-                {currentMode !== 'edit' && currentMode !== 'delete' && (
-                  <select
-                    className="col-type-select"
-                    value={col.type}
-                    onChange={(e) => {
-                      const newType = e.target.value as "string" | "number" | "date";
-                      handleColumnTypeChange(colIndex, newType);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    <option value={COLUMN_TYPES.STRING}>String</option>
-                    <option value={COLUMN_TYPES.NUMBER}>Number</option>
-                    <option value={COLUMN_TYPES.DATE}>Date</option>
-                  </select>
-                )}
+
               </div>
             </div>
             <ColumnResizer

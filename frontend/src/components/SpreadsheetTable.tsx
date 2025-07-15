@@ -18,7 +18,7 @@ interface SpreadsheetTableProps {
   getTotalTableWidth: () => number;
   handleColumnResize: (columnKey: string, newWidth: number) => void;
   handleColumnNameChange: (colIndex: number, newName: string) => void;
-  handleColumnTypeChange: (colIndex: number, newType: 'string' | 'number' | 'date') => void;
+
   handleHeaderClick: (colIndex: number, event: React.MouseEvent) => void;
   handleHeaderPaste: (startCol: number, cells: string[][]) => void;
   handleCellClick: (rowIndex: number, colIndex: number) => void;
@@ -54,7 +54,6 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
   getTotalTableWidth,
   handleColumnResize,
   handleColumnNameChange,
-  handleColumnTypeChange,
   handleHeaderClick,
   handleHeaderPaste,
   handleCellClick,
@@ -148,7 +147,6 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
               getColumnWidth={getColumnWidth}
               handleColumnResize={handleColumnResize}
               handleColumnNameChange={handleColumnNameChange}
-              handleColumnTypeChange={handleColumnTypeChange}
               handleHeaderClick={handleHeaderClick}
               handleHeaderPaste={handleHeaderPaste}
               handleColumnReorder={handleColumnReorder}
