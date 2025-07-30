@@ -21,7 +21,8 @@ export const useSpreadsheet = () => {
   const [configColumns, setConfigColumns] = useState<ColumnDefinition[]>(() => 
     initialColumnSchema.map(col => {
       // Set default types based on column name hints
-      let type: 'string' | 'number' | 'date' = 'string';
+      let type: 'string' | 'number' | 'date' | 'picklist' = 'string';
+      let validation: ValidationConstraints = {};
       const lowerLabel = col.label.toLowerCase();
       
       if (lowerLabel.includes('date') || lowerLabel.includes('dob') || lowerLabel.includes('birth')) {
@@ -34,11 +35,17 @@ export const useSpreadsheet = () => {
         lowerLabel.includes('number')
       ) {
         type = 'number';
+      } else if (lowerLabel.includes('category')) {
+        type = 'picklist';
+        validation = {
+          picklistValues: ['Employee', 'Director']
+        };
       }
       
       return { 
         ...col,
         type,
+        validation,
         optional: false // Set all columns as required by default
       };
     })

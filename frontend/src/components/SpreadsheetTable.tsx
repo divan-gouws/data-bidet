@@ -87,7 +87,12 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
     const rowsWithData = rows.filter(hasData);
 
     if (!getValidationErrorsForCell) {
-      return { totalRows: rowsWithData.length, rowsWithErrors: 0, totalErrors: 0 };
+      return { 
+        totalRows: rowsWithData.length, 
+        rowsWithErrors: 0, 
+        totalErrors: 0,
+        validRows: rowsWithData.length 
+      };
     }
 
     const rowsWithErrorsSet = new Set<number>();
@@ -106,10 +111,13 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
       }
     });
 
+    const validRows = rowsWithData.length - rowsWithErrorsSet.size;
+
     return {
       totalRows: rowsWithData.length,
       rowsWithErrors: rowsWithErrorsSet.size,
-      totalErrors
+      totalErrors,
+      validRows
     };
   }, [rows, columnSchema, getValidationErrorsForCell]);
 
@@ -120,9 +128,12 @@ export const SpreadsheetTable: React.FC<SpreadsheetTableProps> = ({
         <span className="validation-stat">
           Total Rows: <strong>{validationStats.totalRows}</strong>
         </span>
+        <span className="validation-stat">
+          Valid Rows: <strong>{validationStats.validRows}</strong>
+        </span>
         {validationStats.rowsWithErrors > 0 && (
           <span className="validation-stat error">
-            Rows with Errors: <strong>{validationStats.rowsWithErrors}</strong>
+            Invalid Rows: <strong>{validationStats.rowsWithErrors}</strong>
           </span>
         )}
         {validationStats.totalErrors > 0 && (
